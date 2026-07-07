@@ -1,0 +1,210 @@
+[build]
+  publish = "public"
+
+[functions]
+  directory = "netlify/functions"
+
+[[redirects]]
+  from = "/webhook"
+  to = "/.netlify/functions/telegram"
+  status = 200
+
+[[redirects]]
+  from = "/api/stock"
+  to = "/.netlify/functions/api-stock"
+  status = 200
+
+[[redirects]]
+  from = "/api/calibraciones"
+  to = "/.netlify/functions/api-calibraciones"
+  status = 200
+
+[[redirects]]
+  from = "/api/add-stock"
+  to = "/.netlify/functions/api-add-stock"
+  status = 200
+
+[[redirects]]
+  from = "/api/edit-stock"
+  to = "/.netlify/functions/api-edit-stock"
+  status = 200
+
+[[redirects]]
+  from = "/api/delete-stock"
+  to = "/.netlify/functions/api-delete-stock"
+  status = 200
+
+[[redirects]]
+  from = "/api/add-equipo"
+  to = "/.netlify/functions/api-add-equipo"
+  status = 200
+
+[[redirects]]
+  from = "/api/delete-equipo"
+  to = "/.netlify/functions/api-delete-equipo"
+  status = 200
+
+[[redirects]]
+  from = "/api/calibrar-equipo"
+  to = "/.netlify/functions/api-calibrar-equipo"
+  status = 200
+
+[[redirects]]
+  from = "/api/edit-equipo"
+  to = "/.netlify/functions/api-edit-equipo"
+  status = 200
+
+[[redirects]]
+  from = "/api/delete-stock-permanente"
+  to = "/.netlify/functions/api-delete-stock-permanente"
+  status = 200
+
+[[redirects]]
+  from = "/api/software"
+  to = "/.netlify/functions/api-software"
+  status = 200
+
+[[redirects]]
+  from = "/api/add-software"
+  to = "/.netlify/functions/api-add-software"
+  status = 200
+
+[[redirects]]
+  from = "/api/delete-software"
+  to = "/.netlify/functions/api-delete-software"
+  status = 200
+
+[[redirects]]
+  from = "/api/edit-software"
+  to = "/.netlify/functions/api-edit-software"
+  status = 200
+
+[[redirects]]
+  from = "/api/bancos"
+  to = "/.netlify/functions/api-bancos"
+  status = 200
+
+[[redirects]]
+  from = "/api/add-banco"
+  to = "/.netlify/functions/api-add-banco"
+  status = 200
+
+[[redirects]]
+  from = "/api/edit-banco"
+  to = "/.netlify/functions/api-edit-banco"
+  status = 200
+
+[[redirects]]
+  from = "/api/delete-banco"
+  to = "/.netlify/functions/api-delete-banco"
+  status = 200
+
+[[redirects]]
+  from = "/api/setups"
+  to = "/.netlify/functions/api-setups"
+  status = 200
+
+[[redirects]]
+  from = "/api/add-setup"
+  to = "/.netlify/functions/api-add-setup"
+  status = 200
+
+[[redirects]]
+  from = "/api/edit-setup"
+  to = "/.netlify/functions/api-edit-setup"
+  status = 200
+
+[[redirects]]
+  from = "/api/delete-setup"
+  to = "/.netlify/functions/api-delete-setup"
+  status = 200
+
+[[redirects]]
+  from = "/api/pasos"
+  to = "/.netlify/functions/api-pasos"
+  status = 200
+
+[[redirects]]
+  from = "/api/add-paso"
+  to = "/.netlify/functions/api-add-paso"
+  status = 200
+
+[[redirects]]
+  from = "/api/edit-paso"
+  to = "/.netlify/functions/api-edit-paso"
+  status = 200
+
+[[redirects]]
+  from = "/api/delete-paso"
+  to = "/.netlify/functions/api-delete-paso"
+  status = 200
+
+[[redirects]]
+  from = "/api/setup-software"
+  to = "/.netlify/functions/api-setup-software"
+  status = 200
+
+[[redirects]]
+  from = "/api/add-setup-software"
+  to = "/.netlify/functions/api-add-setup-software"
+  status = 200
+
+[[redirects]]
+  from = "/api/delete-setup-software"
+  to = "/.netlify/functions/api-delete-setup-software"
+  status = 200
+
+[[redirects]]
+  from = "/api/upload-foto-banco"
+  to = "/.netlify/functions/api-upload-foto-banco"
+  status = 200
+
+[[redirects]]
+  from = "/api/delete-foto-banco"
+  to = "/.netlify/functions/api-delete-foto-banco"
+  status = 200
+
+[[redirects]]
+  from = "/api/get-fotos-banco"
+  to = "/.netlify/functions/api-get-fotos-banco"
+  status = 200
+
+[[redirects]]
+  from = "/api/get-documentos-banco"
+  to = "/.netlify/functions/api-get-documentos-banco"
+  status = 200
+
+[[redirects]]
+  from = "/api/get-documentos-setup"
+  to = "/.netlify/functions/api-get-documentos-setup"
+  status = 200
+
+[[redirects]]
+  from = "/api/upload-documento-banco"
+  to = "/.netlify/functions/api-upload-documento-banco"
+  status = 200
+
+[[redirects]]
+  from = "/api/delete-documento-banco"
+  to = "/.netlify/functions/api-delete-documento-banco"
+  status = 200
+
+[[redirects]]
+  from = "/api/upload-documento-setup"
+  to = "/.netlify/functions/api-upload-documento-setup"
+  status = 200
+
+[[redirects]]
+  from = "/api/delete-documento-setup"
+  to = "/.netlify/functions/api-delete-documento-setup"
+  status = 200
+
+[[redirects]]
+  from = "/api/upload-foto-paso"
+  to = "/.netlify/functions/api-upload-foto-paso"
+  status = 200
+
+[[redirects]]
+  from = "/api/delete-foto-paso"
+  to = "/.netlify/functions/api-delete-foto-paso"
+  status = 200
