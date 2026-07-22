@@ -229,6 +229,18 @@
   .banco-card-add-icon{font-size:28px;}
   .banco-card-add-label{font-size:12px;font-weight:500;}
 
+  /* DIGITAL TOOLS: compact cards */
+  .tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;padding:4px 0 20px;}
+  .tool-card{background:var(--white);border:0.5px solid var(--sandgrau);border-radius:10px;padding:16px 12px;height:200px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;cursor:pointer;transition:box-shadow 150ms ease-out,border-color 150ms ease-out;}
+  .tool-card:hover{box-shadow:0 4px 16px rgba(0,35,100,0.10);border-color:var(--akzent-blau);}
+  .tool-card-icon{font-size:34px;line-height:1;margin-bottom:6px;}
+  .tool-card-name{font-size:12px;font-weight:600;color:var(--geze-blau);line-height:1.3;}
+  .tool-card-desc{font-size:10px;color:var(--sec-2);line-height:1.4;flex:1;overflow:hidden;}
+  .tool-card-btn{padding:5px 14px;font-size:11px;}
+  .tool-card-add{border:1.5px dashed var(--sandgrau-dunkel);border-radius:10px;height:200px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 150ms ease-out;color:var(--sec-1);}
+  .tool-card-add:hover{border-color:var(--akzent-blau);color:var(--akzent-blau);background:rgba(0,110,225,0.03);}
+  .tool-card-add-icon{font-size:28px;}
+
   /* Banco detail view */
   .banco-detail{display:none;}
   .banco-detail.active{display:block;}
@@ -645,18 +657,15 @@
         <span class="section-count">herramientas del laboratorio</span>
       </div>
     </div>
-    <div class="bancos-grid">
-      <div class="banco-card" onclick="window.open('tools/calibracion-galgas.html','_blank')">
-        <div class="banco-card-img"><div class="banco-card-img-placeholder">📐</div></div>
-        <div class="banco-card-body">
-          <div class="banco-card-name">Calibración de Galgas Extensiométricas</div>
-          <div class="banco-card-meta">Cálculo del Factor K para QuantumX y Beckhoff</div>
-          <button class="btn-secondary" style="width:100%;margin-top:10px;" onclick="event.stopPropagation();window.open('tools/calibracion-galgas.html','_blank')">Abrir herramienta →</button>
-        </div>
+    <div class="tools-grid">
+      <div class="tool-card" onclick="window.open('tools/calibracion-galgas.html','_blank')">
+        <div class="tool-card-icon">📐</div>
+        <div class="tool-card-name">Calibración de Galgas Extensiométricas</div>
+        <div class="tool-card-desc">Cálculo del Factor K para QuantumX y Beckhoff</div>
+        <button class="btn-secondary tool-card-btn" onclick="event.stopPropagation();window.open('tools/calibracion-galgas.html','_blank')">Abrir</button>
       </div>
-      <div class="banco-card-add" onclick="showToast('Próximamente')">
-        <div class="banco-card-add-icon">+</div>
-        <div class="banco-card-add-label">Nueva herramienta</div>
+      <div class="tool-card-add" onclick="showToast('Próximamente')">
+        <div class="tool-card-add-icon">+</div>
       </div>
     </div>
   </div>
@@ -2508,12 +2517,16 @@ var kanbanTarjetas = [];
 var kanbanEtiquetas = [];
 var kanbanDragCardId = null;
 var kanbanTarjetaActualId = null;
+var kanbanTarjetaDraft = null;
 var kanbanEditColumnaId = null;
 var kanbanNextTempId = -1;
 
+function enviarKanban(url, method, body) {
+  fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).catch(function() {});
+}
 function guardarKanban(url, method, body) {
   showToast('Guardando...');
-  fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).catch(function() {});
+  enviarKanban(url, method, body);
 }
 
 function loadKanban() {
@@ -2653,23 +2666,34 @@ function abrirTarjetaDrawer(id) {
   var t = kanbanTarjetas.find(function(x) { return x.id === id; });
   if (!t) return;
   kanbanTarjetaActualId = id;
-  document.getElementById('kt-titulo').value = t.titulo || '';
-  document.getElementById('kt-responsable').value = t.responsable || '';
-  document.getElementById('kt-fecha').value = t.fecha_inicio ? String(t.fecha_inicio).slice(0, 10) : '';
-  document.getElementById('kt-tipo').value = t.tipo_producto || '';
-  document.getElementById('kt-descripcion').value = t.descripcion || '';
+  kanbanTarjetaDraft = {
+    titulo: t.titulo || '',
+    responsable: t.responsable || '',
+    fecha_inicio: t.fecha_inicio || '',
+    tipo_producto: t.tipo_producto || '',
+    descripcion: t.descripcion || '',
+    banco_id: (t.banco_id != null ? t.banco_id : null),
+    columna_id: t.columna_id,
+    etiquetas: (t.etiquetas || []).slice()
+  };
+
+  document.getElementById('kt-titulo').value = kanbanTarjetaDraft.titulo;
+  document.getElementById('kt-responsable').value = kanbanTarjetaDraft.responsable;
+  document.getElementById('kt-fecha').value = kanbanTarjetaDraft.fecha_inicio ? String(kanbanTarjetaDraft.fecha_inicio).slice(0, 10) : '';
+  document.getElementById('kt-tipo').value = kanbanTarjetaDraft.tipo_producto;
+  document.getElementById('kt-descripcion').value = kanbanTarjetaDraft.descripcion;
 
   var bancoSel = document.getElementById('kt-banco');
   bancoSel.innerHTML = '<option value="">— Ninguno —</option>' + bancosData.map(function(b) {
-    return '<option value="' + b.id + '"' + (t.banco_id === b.id ? ' selected' : '') + '>' + b.nombre + '</option>';
+    return '<option value="' + b.id + '"' + (kanbanTarjetaDraft.banco_id === b.id ? ' selected' : '') + '>' + b.nombre + '</option>';
   }).join('');
 
   var colSel = document.getElementById('kt-columna');
   colSel.innerHTML = kanbanColumnas.map(function(c) {
-    return '<option value="' + c.id + '"' + (t.columna_id === c.id ? ' selected' : '') + '>' + c.titulo + '</option>';
+    return '<option value="' + c.id + '"' + (kanbanTarjetaDraft.columna_id === c.id ? ' selected' : '') + '>' + c.titulo + '</option>';
   }).join('');
 
-  renderTarjetaLabelPicker(t);
+  renderTarjetaLabelPicker();
 
   document.getElementById('kanban-drawer').classList.add('open');
   document.getElementById('kanban-drawer-overlay').classList.add('open');
@@ -2679,49 +2703,69 @@ function closeTarjetaDrawer() {
   document.getElementById('kanban-drawer').classList.remove('open');
   document.getElementById('kanban-drawer-overlay').classList.remove('open');
   kanbanTarjetaActualId = null;
+  kanbanTarjetaDraft = null;
 }
 
-function renderTarjetaLabelPicker(t) {
+function cancelarEdicionTarjeta() {
+  closeTarjetaDrawer();
+}
+
+function renderTarjetaLabelPicker() {
+  var draft = kanbanTarjetaDraft;
   var html = kanbanEtiquetas.map(function(et) {
-    var selected = (t.etiquetas || []).indexOf(et.id) !== -1;
+    var selected = draft && draft.etiquetas.indexOf(et.id) !== -1;
     return '<button type="button" class="kanban-label-option' + (selected ? ' selected' : '') + '" style="background:' + et.color + '" onclick="toggleTarjetaLabel(' + et.id + ')">' + et.nombre + '</button>';
   }).join('');
   document.getElementById('kt-labels').innerHTML = html || '<span style="font-size:11px;color:var(--sec-1);">Sin etiquetas creadas</span>';
 }
 
 function toggleTarjetaLabel(etiquetaId) {
-  var t = kanbanTarjetas.find(function(x) { return x.id === kanbanTarjetaActualId; });
-  if (!t) return;
-  if (!t.etiquetas) t.etiquetas = [];
-  var idx = t.etiquetas.indexOf(etiquetaId);
-  if (idx === -1) t.etiquetas.push(etiquetaId); else t.etiquetas.splice(idx, 1);
-  renderTarjetaLabelPicker(t);
-  renderKanbanBoard();
-  guardarKanban('/api/kanban-tarjeta-etiquetas', 'POST', { tarjeta_id: t.id, etiquetas: t.etiquetas });
+  if (!kanbanTarjetaDraft) return;
+  var idx = kanbanTarjetaDraft.etiquetas.indexOf(etiquetaId);
+  if (idx === -1) kanbanTarjetaDraft.etiquetas.push(etiquetaId); else kanbanTarjetaDraft.etiquetas.splice(idx, 1);
+  renderTarjetaLabelPicker();
 }
 
-function saveTarjetaField(field, value) {
-  var t = kanbanTarjetas.find(function(x) { return x.id === kanbanTarjetaActualId; });
-  if (!t) return;
-  t[field] = value;
-  renderKanbanBoard();
-  var body = {}; body[field] = value;
-  guardarKanban('/api/kanban-tarjetas/' + t.id, 'PUT', body);
+function updateDraftField(field, value) {
+  if (!kanbanTarjetaDraft) return;
+  kanbanTarjetaDraft[field] = value;
 }
 
-function moverTarjetaColumna(columnaId) {
+function guardarCambiosTarjeta() {
   var t = kanbanTarjetas.find(function(x) { return x.id === kanbanTarjetaActualId; });
-  if (!t) return;
-  columnaId = parseInt(columnaId, 10);
-  t.columna_id = columnaId;
-  var cards = kanbanTarjetas.filter(function(x) { return x.columna_id === columnaId; });
-  t.orden = cards.length - 1;
+  if (!t || !kanbanTarjetaDraft) return;
+  var draft = kanbanTarjetaDraft;
+  var columnaCambio = draft.columna_id !== t.columna_id;
+
+  t.titulo = draft.titulo;
+  t.responsable = draft.responsable;
+  t.fecha_inicio = draft.fecha_inicio;
+  t.tipo_producto = draft.tipo_producto;
+  t.descripcion = draft.descripcion;
+  t.banco_id = draft.banco_id ? parseInt(draft.banco_id, 10) : null;
+  t.etiquetas = draft.etiquetas.slice();
+
+  showToast('Guardando...');
+  enviarKanban('/api/kanban-tarjetas/' + t.id, 'PUT', {
+    titulo: t.titulo, responsable: t.responsable, fecha_inicio: t.fecha_inicio,
+    tipo_producto: t.tipo_producto, descripcion: t.descripcion, banco_id: t.banco_id
+  });
+  enviarKanban('/api/kanban-tarjeta-etiquetas', 'POST', { tarjeta_id: t.id, etiquetas: t.etiquetas });
+
+  if (columnaCambio) {
+    t.columna_id = draft.columna_id;
+    var cards = kanbanTarjetas.filter(function(x) { return x.columna_id === draft.columna_id && x.id !== t.id; });
+    t.orden = cards.length;
+    enviarKanban('/api/kanban-mover-tarjeta', 'POST', { tarjeta_id: t.id, columna_id: t.columna_id, orden: t.orden });
+  }
+
   renderKanbanBoard();
-  guardarKanban('/api/kanban-mover-tarjeta', 'POST', { tarjeta_id: t.id, columna_id: columnaId, orden: t.orden });
+  closeTarjetaDrawer();
 }
 
 function eliminarTarjetaActual() {
   if (kanbanTarjetaActualId == null) return;
+  if (!confirm('Eliminar esta tarjeta? Esta accion no se puede deshacer.')) return;
   var id = kanbanTarjetaActualId;
   kanbanTarjetas = kanbanTarjetas.filter(function(t) { return t.id !== id; });
   closeTarjetaDrawer();
@@ -2830,20 +2874,20 @@ setInterval(loadAll, 30000);
     <button class="kanban-drawer-close" onclick="closeTarjetaDrawer()">✕</button>
   </div>
   <div class="kanban-drawer-body">
-    <div class="form-group"><label class="form-label">Título</label><input class="form-input" id="kt-titulo" onblur="saveTarjetaField('titulo', this.value)"></div>
+    <div class="form-group"><label class="form-label">Título</label><input class="form-input" id="kt-titulo" onblur="updateDraftField('titulo', this.value)"></div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Responsable</label><input class="form-input" id="kt-responsable" onblur="saveTarjetaField('responsable', this.value)"></div>
-      <div class="form-group"><label class="form-label">Fecha inicio</label><input type="date" class="form-input" id="kt-fecha" onblur="saveTarjetaField('fecha_inicio', this.value)"></div>
+      <div class="form-group"><label class="form-label">Responsable</label><input class="form-input" id="kt-responsable" onblur="updateDraftField('responsable', this.value)"></div>
+      <div class="form-group"><label class="form-label">Fecha inicio</label><input type="date" class="form-input" id="kt-fecha" onblur="updateDraftField('fecha_inicio', this.value)"></div>
     </div>
-    <div class="form-group"><label class="form-label">Tipo de producto</label><input class="form-input" id="kt-tipo" onblur="saveTarjetaField('tipo_producto', this.value)"></div>
-    <div class="form-group"><label class="form-label">Descripción</label><textarea class="setup-notes" id="kt-descripcion" onblur="saveTarjetaField('descripcion', this.value)"></textarea></div>
+    <div class="form-group"><label class="form-label">Tipo de producto</label><input class="form-input" id="kt-tipo" onblur="updateDraftField('tipo_producto', this.value)"></div>
+    <div class="form-group"><label class="form-label">Descripción</label><textarea class="setup-notes" id="kt-descripcion" onblur="updateDraftField('descripcion', this.value)"></textarea></div>
     <div class="form-group"><label class="form-label">Banco de ensayo relacionado</label>
-      <select class="form-input" id="kt-banco" onchange="saveTarjetaField('banco_id', this.value || null)">
+      <select class="form-input" id="kt-banco" onchange="updateDraftField('banco_id', this.value || null)">
         <option value="">— Ninguno —</option>
       </select>
     </div>
     <div class="form-group"><label class="form-label">Columna actual</label>
-      <select class="form-input" id="kt-columna" onchange="moverTarjetaColumna(this.value)"></select>
+      <select class="form-input" id="kt-columna" onchange="updateDraftField('columna_id', parseInt(this.value,10))"></select>
     </div>
     <div class="form-group"><label class="form-label">Etiquetas</label>
       <div class="kanban-label-picker" id="kt-labels"></div>
@@ -2851,7 +2895,10 @@ setInterval(loadAll, 30000);
   </div>
   <div class="kanban-drawer-footer">
     <button class="btn-danger-sm" onclick="eliminarTarjetaActual()">🗑️ Eliminar tarjeta</button>
-    <button class="btn-secondary" onclick="closeTarjetaDrawer()">Cerrar</button>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-secondary" onclick="cancelarEdicionTarjeta()">Cancelar</button>
+      <button class="btn-primary" onclick="guardarCambiosTarjeta()">Guardar cambios</button>
+    </div>
   </div>
 </div>
 
