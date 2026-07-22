@@ -293,6 +293,49 @@
   footer{border-top:0.5px solid var(--sandgrau);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;background:var(--white);margin-top:20px;}
   .footer-left{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--sec-1);}
   .footer-right{font-size:11px;color:var(--sec-1);}
+
+  /* KANBAN BOARD */
+  .kanban-board{display:flex;gap:16px;overflow-x:auto;padding-bottom:16px;align-items:flex-start;}
+  .kanban-column{background:var(--white);border:0.5px solid var(--sandgrau);border-radius:10px;width:280px;min-width:280px;flex-shrink:0;display:flex;flex-direction:column;max-height:calc(100vh - 230px);}
+  .kanban-column-header{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:0.5px solid var(--sandgrau);border-top:3px solid var(--col-color,var(--akzent-blau));border-radius:10px 10px 0 0;}
+  .kanban-column-dot{width:9px;height:9px;border-radius:50%;background:var(--col-color,var(--akzent-blau));flex-shrink:0;}
+  .kanban-column-title{flex:1;font-size:13px;font-weight:600;color:var(--geze-blau);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .kanban-column-count{font-size:11px;font-weight:500;color:var(--sec-2);background:var(--sandgrau-hell);padding:2px 8px;border-radius:10px;flex-shrink:0;}
+  .kanban-column-addbtn{background:none;border:none;color:var(--akzent-blau);font-size:17px;cursor:pointer;line-height:1;padding:2px 4px;flex-shrink:0;}
+  .kanban-column-addbtn:hover{color:var(--geze-blau);}
+  .kanban-column-body{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:60px;transition:background 150ms;}
+  .kanban-column-body.drag-over{background:rgba(0,110,225,0.06);}
+  .kanban-card{background:var(--sandgrau-hell);border:0.5px solid var(--sandgrau);border-radius:8px;padding:10px 12px;cursor:grab;transition:box-shadow 150ms,border-color 150ms;}
+  .kanban-card:hover{border-color:var(--akzent-blau);box-shadow:0 2px 8px rgba(0,35,100,0.08);}
+  .kanban-card.dragging{opacity:0.35;}
+  .kanban-card-title{font-size:13px;font-weight:600;color:var(--geze-blau);margin-bottom:6px;}
+  .kanban-card-meta{font-size:11px;color:var(--sec-2);display:flex;align-items:center;gap:4px;margin-bottom:4px;}
+  .kanban-card-banco{font-size:10px;color:var(--akzent-blau);background:rgba(0,110,225,0.08);padding:2px 7px;border-radius:4px;display:inline-block;margin-top:4px;}
+  .kanban-card-labels{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+  .kanban-label-chip{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;color:#fff;white-space:nowrap;}
+
+  /* KANBAN DRAWER */
+  .kanban-drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,35,100,0.3);z-index:350;}
+  .kanban-drawer-overlay.open{display:block;}
+  .kanban-drawer{position:fixed;top:0;right:-440px;width:440px;max-width:92vw;height:100vh;background:var(--white);box-shadow:-10px 0 40px rgba(0,35,100,0.15);z-index:360;transition:right 220ms cubic-bezier(0.16,1,0.3,1);display:flex;flex-direction:column;}
+  .kanban-drawer.open{right:0;}
+  .kanban-drawer-header{padding:20px 22px;border-bottom:0.5px solid var(--sandgrau);display:flex;align-items:center;justify-content:space-between;}
+  .kanban-drawer-title{font-size:15px;font-weight:600;color:var(--geze-blau);}
+  .kanban-drawer-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--sec-2);line-height:1;padding:4px;}
+  .kanban-drawer-close:hover{color:var(--danger);}
+  .kanban-drawer-body{padding:20px 22px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:14px;}
+  .kanban-drawer-footer{padding:16px 22px;border-top:0.5px solid var(--sandgrau);display:flex;justify-content:space-between;gap:8px;}
+  .kanban-label-picker{display:flex;flex-wrap:wrap;gap:6px;}
+  .kanban-label-option{font-size:11px;font-weight:600;padding:4px 11px;border-radius:12px;color:#fff;cursor:pointer;opacity:0.35;transition:opacity 150ms;border:none;font-family:'Inter',sans-serif;}
+  .kanban-label-option.selected{opacity:1;}
+  .kanban-etiqueta-row{display:flex;align-items:center;gap:8px;}
+  .kanban-etiqueta-row .kanban-label-chip{flex-shrink:0;}
+  .kanban-etiqueta-row-name{flex:1;font-size:12px;color:var(--geze-blau);}
+
+  /* COLOR SWATCHES */
+  .color-swatch-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .color-swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;box-shadow:0 0 0 1px var(--sandgrau);}
+  .color-swatch.selected{border-color:var(--white);box-shadow:0 0 0 2px var(--geze-blau);}
 </style>
 </head>
 <body>
@@ -575,6 +618,15 @@
           <input type="file" id="doc-setup-input" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none" onchange="uploadDocSetup(event)">
         </div>
         <div class="setup-right-section">
+          <div class="setup-right-label">Herramientas relacionadas</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <select class="form-input" id="setup-tool-select">
+              <option value="tools/calibracion-galgas.html">Calibración de Galgas Extensiométricas</option>
+            </select>
+            <button class="btn-secondary" style="width:100%;" onclick="abrirToolSeleccionada()">Abrir tool</button>
+          </div>
+        </div>
+        <div class="setup-right-section">
           <div class="setup-right-label">Notas / contraseñas</div>
           <textarea class="setup-notes" id="setup-notas" placeholder="ej: usuario PC: admin / pass: ****" onblur="saveSetupNotas()"></textarea>
         </div>
@@ -586,20 +638,44 @@
 
   <!-- DIGITAL TOOLS PANEL -->
   <div class="panel-section" id="panel-digital">
-    <div style="display:flex;align-items:center;justify-content:center;min-height:60vh;text-align:center;">
-      <div style="color:var(--sec-2);font-size:15px;font-weight:500;">
-        <div style="font-size:32px;margin-bottom:12px;">🛠️</div>
-        Próximamente — herramientas digitales del laboratorio
+    <div class="section-header">
+      <div class="section-title-group">
+        <div class="frame-accent"><div class="fl"></div><div class="fl"></div></div>
+        <span class="section-title">Digital Tools</span>
+        <span class="section-count">herramientas del laboratorio</span>
+      </div>
+    </div>
+    <div class="bancos-grid">
+      <div class="banco-card" onclick="window.open('tools/calibracion-galgas.html','_blank')">
+        <div class="banco-card-img"><div class="banco-card-img-placeholder">📐</div></div>
+        <div class="banco-card-body">
+          <div class="banco-card-name">Calibración de Galgas Extensiométricas</div>
+          <div class="banco-card-meta">Cálculo del Factor K para QuantumX y Beckhoff</div>
+          <button class="btn-secondary" style="width:100%;margin-top:10px;" onclick="event.stopPropagation();window.open('tools/calibracion-galgas.html','_blank')">Abrir herramienta →</button>
+        </div>
+      </div>
+      <div class="banco-card-add" onclick="showToast('Próximamente')">
+        <div class="banco-card-add-icon">+</div>
+        <div class="banco-card-add-label">Nueva herramienta</div>
       </div>
     </div>
   </div>
 
   <!-- BENCHMARKING ACTIVITIES PANEL -->
   <div class="panel-section" id="panel-benchmarking">
-    <div style="display:flex;align-items:center;justify-content:center;min-height:60vh;text-align:center;">
-      <div style="color:var(--sec-2);font-size:15px;font-weight:500;">
-        Próximamente
+    <div class="section-header">
+      <div class="section-title-group">
+        <div class="frame-accent"><div class="fl"></div><div class="fl"></div></div>
+        <span class="section-title">Benchmarking Activities</span>
+        <span class="section-count" id="count-kanban-tarjetas">cargando...</span>
       </div>
+      <div class="section-actions">
+        <button class="btn-secondary" onclick="openManageEtiquetasModal()">🏷️ Etiquetas</button>
+        <button class="btn-primary" onclick="openAddColumnaModal()">+ Nueva columna</button>
+      </div>
+    </div>
+    <div class="kanban-board" id="kanban-board">
+      <div class="loading-row" style="padding:40px;">Cargando tablero...</div>
     </div>
   </div>
 
@@ -1028,6 +1104,15 @@ function showPanel(name) {
     document.getElementById('vista-setup-page').classList.remove('active');
     loadBancos();
   }
+  if (name === 'benchmarking') {
+    loadKanban();
+  }
+}
+
+// Tarea 3: abrir tool relacionada desde Setup
+function abrirToolSeleccionada() {
+  var sel = document.getElementById('setup-tool-select');
+  if (sel && sel.value) window.open(sel.value, '_blank');
 }
 
 // Sidepanel toggle
@@ -2409,12 +2494,403 @@ function closeFotoModal() {
   document.getElementById('modal-foto-ampliada-img').src = '';
 }
 
+// ===== KANBAN / BENCHMARKING ACTIVITIES =====
+var KANBAN_COLORS = ['#006ee1','#767878','#e8812a','#8e44ad','#1a7a4a','#c0392b','#fddc35','#002364','#16a085','#d35400'];
+var KANBAN_DEFAULT_COLUMNAS = [
+  { id: 1, titulo: 'Backlog', color: '#767878', orden: 1 },
+  { id: 2, titulo: 'En Análisis', color: '#006ee1', orden: 2 },
+  { id: 3, titulo: 'En Laboratorio', color: '#e8812a', orden: 3 },
+  { id: 4, titulo: 'Revisión', color: '#8e44ad', orden: 4 },
+  { id: 5, titulo: 'Completado', color: '#1a7a4a', orden: 5 }
+];
+var kanbanColumnas = [];
+var kanbanTarjetas = [];
+var kanbanEtiquetas = [];
+var kanbanDragCardId = null;
+var kanbanTarjetaActualId = null;
+var kanbanEditColumnaId = null;
+var kanbanNextTempId = -1;
+
+function guardarKanban(url, method, body) {
+  showToast('Guardando...');
+  fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).catch(function() {});
+}
+
+function loadKanban() {
+  document.getElementById('kanban-board').innerHTML = '<div class="loading-row" style="padding:40px;">Cargando tablero...</div>';
+  Promise.all([
+    fetch('/api/kanban-columnas').then(function(r) { return r.json(); }).catch(function() { return null; }),
+    fetch('/api/kanban-tarjetas').then(function(r) { return r.json(); }).catch(function() { return null; }),
+    fetch('/api/kanban-etiquetas').then(function(r) { return r.json(); }).catch(function() { return null; })
+  ]).then(function(results) {
+    var colsResp = results[0], cardsResp = results[1], labelsResp = results[2];
+    kanbanColumnas = (Array.isArray(colsResp) && colsResp.length ? colsResp : (colsResp && colsResp.columnas)) || KANBAN_DEFAULT_COLUMNAS.slice();
+    kanbanTarjetas = (Array.isArray(cardsResp) ? cardsResp : (cardsResp && cardsResp.tarjetas)) || [];
+    kanbanEtiquetas = (Array.isArray(labelsResp) ? labelsResp : (labelsResp && labelsResp.etiquetas)) || [];
+    kanbanColumnas.sort(function(a, b) { return a.orden - b.orden; });
+    kanbanTarjetas.forEach(function(t) { if (!t.etiquetas) t.etiquetas = []; });
+    if (!bancosData.length) {
+      fetch('/api/bancos').then(function(r) { return r.json(); }).then(function(data) {
+        var d = Array.isArray(data) ? data[0] : data;
+        bancosData = (d && d.bancos) || [];
+      }).catch(function() {});
+    }
+    renderKanbanBoard();
+  });
+}
+
+function renderKanbanBoard() {
+  var totalTarjetas = kanbanTarjetas.length;
+  document.getElementById('count-kanban-tarjetas').textContent = totalTarjetas + ' tarjeta' + (totalTarjetas !== 1 ? 's' : '');
+  var html = kanbanColumnas.map(function(col) {
+    var cards = kanbanTarjetas.filter(function(t) { return t.columna_id === col.id; }).sort(function(a, b) { return (a.orden || 0) - (b.orden || 0); });
+    var cardsHtml = cards.map(renderKanbanCard).join('');
+    return '<div class="kanban-column" style="--col-color:' + col.color + '">' +
+      '<div class="kanban-column-header">' +
+        '<div class="kanban-column-dot"></div>' +
+        '<div class="kanban-column-title" onclick="openEditColumnaModal(' + col.id + ')" title="Editar columna">' + col.titulo + '</div>' +
+        '<div class="kanban-column-count">' + cards.length + '</div>' +
+        '<button class="kanban-column-addbtn" onclick="nuevaTarjeta(' + col.id + ')" title="Añadir tarjeta">+</button>' +
+      '</div>' +
+      '<div class="kanban-column-body" data-columna-id="' + col.id + '" ondragover="kanbanDragOver(event)" ondragleave="kanbanDragLeave(event)" ondrop="kanbanDrop(event,' + col.id + ')">' +
+        cardsHtml +
+      '</div>' +
+    '</div>';
+  }).join('');
+  document.getElementById('kanban-board').innerHTML = html;
+}
+
+function renderKanbanCard(t) {
+  var banco = bancosData.find(function(b) { return b.id === t.banco_id; });
+  var labelsHtml = (t.etiquetas || []).map(function(eid) {
+    var et = kanbanEtiquetas.find(function(e) { return e.id === eid; });
+    if (!et) return '';
+    return '<span class="kanban-label-chip" style="background:' + et.color + '">' + et.nombre + '</span>';
+  }).join('');
+  return '<div class="kanban-card" draggable="true" data-tarjeta-id="' + t.id + '" ondragstart="kanbanDragStart(event,' + t.id + ')" ondragend="kanbanDragEnd(event)" onclick="abrirTarjetaDrawer(' + t.id + ')">' +
+    '<div class="kanban-card-title">' + t.titulo + '</div>' +
+    (t.responsable ? '<div class="kanban-card-meta">👤 ' + t.responsable + '</div>' : '') +
+    (t.fecha_inicio ? '<div class="kanban-card-meta">📅 ' + formatDate(t.fecha_inicio) + '</div>' : '') +
+    (banco ? '<div class="kanban-card-banco">🏭 ' + banco.nombre + '</div>' : '') +
+    (labelsHtml ? '<div class="kanban-card-labels">' + labelsHtml + '</div>' : '') +
+  '</div>';
+}
+
+// ----- Drag & drop -----
+function kanbanDragStart(e, id) {
+  kanbanDragCardId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', String(id));
+  setTimeout(function() { e.target.classList.add('dragging'); }, 0);
+}
+function kanbanDragEnd(e) {
+  e.target.classList.remove('dragging');
+  document.querySelectorAll('.kanban-column-body').forEach(function(b) { b.classList.remove('drag-over'); });
+}
+function kanbanDragOver(e) {
+  e.preventDefault();
+  var body = e.currentTarget;
+  body.classList.add('drag-over');
+  var dragging = document.querySelector('.kanban-card.dragging');
+  if (!dragging) return;
+  var afterEl = getKanbanDragAfterElement(body, e.clientY);
+  if (afterEl == null) body.appendChild(dragging);
+  else body.insertBefore(dragging, afterEl);
+}
+function kanbanDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+function getKanbanDragAfterElement(container, y) {
+  var els = Array.prototype.slice.call(container.querySelectorAll('.kanban-card:not(.dragging)'));
+  var result = { offset: -Infinity, element: null };
+  els.forEach(function(child) {
+    var box = child.getBoundingClientRect();
+    var offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > result.offset) { result = { offset: offset, element: child }; }
+  });
+  return result.element;
+}
+function kanbanDrop(e, columnaId) {
+  e.preventDefault();
+  var body = e.currentTarget;
+  body.classList.remove('drag-over');
+  var cardId = kanbanDragCardId;
+  if (cardId == null) return;
+  var card = kanbanTarjetas.find(function(t) { return t.id === cardId; });
+  if (card) card.columna_id = columnaId;
+  var orderedIds = Array.prototype.slice.call(body.querySelectorAll('.kanban-card')).map(function(el) { return parseInt(el.getAttribute('data-tarjeta-id'), 10); });
+  orderedIds.forEach(function(id, idx) {
+    var t = kanbanTarjetas.find(function(x) { return x.id === id; });
+    if (t) t.orden = idx;
+  });
+  kanbanDragCardId = null;
+  renderKanbanBoard();
+  guardarKanban('/api/kanban-mover-tarjeta', 'POST', { tarjeta_id: cardId, columna_id: columnaId, orden: orderedIds });
+}
+
+// ----- Tarjeta: crear / drawer -----
+function nuevaTarjeta(columnaId) {
+  var cards = kanbanTarjetas.filter(function(t) { return t.columna_id === columnaId; });
+  var t = {
+    id: kanbanNextTempId--,
+    columna_id: columnaId,
+    titulo: 'Nueva tarjeta',
+    responsable: '',
+    fecha_inicio: '',
+    tipo_producto: '',
+    descripcion: '',
+    banco_id: null,
+    orden: cards.length,
+    etiquetas: []
+  };
+  kanbanTarjetas.push(t);
+  renderKanbanBoard();
+  guardarKanban('/api/kanban-tarjetas', 'POST', t);
+  abrirTarjetaDrawer(t.id);
+}
+
+function abrirTarjetaDrawer(id) {
+  var t = kanbanTarjetas.find(function(x) { return x.id === id; });
+  if (!t) return;
+  kanbanTarjetaActualId = id;
+  document.getElementById('kt-titulo').value = t.titulo || '';
+  document.getElementById('kt-responsable').value = t.responsable || '';
+  document.getElementById('kt-fecha').value = t.fecha_inicio ? String(t.fecha_inicio).slice(0, 10) : '';
+  document.getElementById('kt-tipo').value = t.tipo_producto || '';
+  document.getElementById('kt-descripcion').value = t.descripcion || '';
+
+  var bancoSel = document.getElementById('kt-banco');
+  bancoSel.innerHTML = '<option value="">— Ninguno —</option>' + bancosData.map(function(b) {
+    return '<option value="' + b.id + '"' + (t.banco_id === b.id ? ' selected' : '') + '>' + b.nombre + '</option>';
+  }).join('');
+
+  var colSel = document.getElementById('kt-columna');
+  colSel.innerHTML = kanbanColumnas.map(function(c) {
+    return '<option value="' + c.id + '"' + (t.columna_id === c.id ? ' selected' : '') + '>' + c.titulo + '</option>';
+  }).join('');
+
+  renderTarjetaLabelPicker(t);
+
+  document.getElementById('kanban-drawer').classList.add('open');
+  document.getElementById('kanban-drawer-overlay').classList.add('open');
+}
+
+function closeTarjetaDrawer() {
+  document.getElementById('kanban-drawer').classList.remove('open');
+  document.getElementById('kanban-drawer-overlay').classList.remove('open');
+  kanbanTarjetaActualId = null;
+}
+
+function renderTarjetaLabelPicker(t) {
+  var html = kanbanEtiquetas.map(function(et) {
+    var selected = (t.etiquetas || []).indexOf(et.id) !== -1;
+    return '<button type="button" class="kanban-label-option' + (selected ? ' selected' : '') + '" style="background:' + et.color + '" onclick="toggleTarjetaLabel(' + et.id + ')">' + et.nombre + '</button>';
+  }).join('');
+  document.getElementById('kt-labels').innerHTML = html || '<span style="font-size:11px;color:var(--sec-1);">Sin etiquetas creadas</span>';
+}
+
+function toggleTarjetaLabel(etiquetaId) {
+  var t = kanbanTarjetas.find(function(x) { return x.id === kanbanTarjetaActualId; });
+  if (!t) return;
+  if (!t.etiquetas) t.etiquetas = [];
+  var idx = t.etiquetas.indexOf(etiquetaId);
+  if (idx === -1) t.etiquetas.push(etiquetaId); else t.etiquetas.splice(idx, 1);
+  renderTarjetaLabelPicker(t);
+  renderKanbanBoard();
+  guardarKanban('/api/kanban-tarjeta-etiquetas', 'POST', { tarjeta_id: t.id, etiquetas: t.etiquetas });
+}
+
+function saveTarjetaField(field, value) {
+  var t = kanbanTarjetas.find(function(x) { return x.id === kanbanTarjetaActualId; });
+  if (!t) return;
+  t[field] = value;
+  renderKanbanBoard();
+  var body = {}; body[field] = value;
+  guardarKanban('/api/kanban-tarjetas/' + t.id, 'PUT', body);
+}
+
+function moverTarjetaColumna(columnaId) {
+  var t = kanbanTarjetas.find(function(x) { return x.id === kanbanTarjetaActualId; });
+  if (!t) return;
+  columnaId = parseInt(columnaId, 10);
+  t.columna_id = columnaId;
+  var cards = kanbanTarjetas.filter(function(x) { return x.columna_id === columnaId; });
+  t.orden = cards.length - 1;
+  renderKanbanBoard();
+  guardarKanban('/api/kanban-mover-tarjeta', 'POST', { tarjeta_id: t.id, columna_id: columnaId, orden: t.orden });
+}
+
+function eliminarTarjetaActual() {
+  if (kanbanTarjetaActualId == null) return;
+  var id = kanbanTarjetaActualId;
+  kanbanTarjetas = kanbanTarjetas.filter(function(t) { return t.id !== id; });
+  closeTarjetaDrawer();
+  renderKanbanBoard();
+  guardarKanban('/api/kanban-tarjetas/' + id, 'DELETE', { id: id });
+}
+
+// ----- Columnas -----
+function renderColorSwatches(containerId, selectedColor) {
+  var el = document.getElementById(containerId);
+  el.setAttribute('data-selected-color', selectedColor);
+  el.innerHTML = KANBAN_COLORS.map(function(c) {
+    return '<div class="color-swatch' + (c === selectedColor ? ' selected' : '') + '" style="background:' + c + '" onclick="selectColorSwatch(\'' + containerId + '\',\'' + c + '\')"></div>';
+  }).join('');
+}
+function selectColorSwatch(containerId, color) {
+  var el = document.getElementById(containerId);
+  el.setAttribute('data-selected-color', color);
+  el.querySelectorAll('.color-swatch').forEach(function(s) { s.classList.remove('selected'); });
+  var idx = KANBAN_COLORS.indexOf(color);
+  if (idx !== -1) el.children[idx].classList.add('selected');
+}
+
+function openAddColumnaModal() {
+  kanbanEditColumnaId = null;
+  document.getElementById('kanban-columna-modal-title').textContent = '📋 Nueva columna';
+  document.getElementById('kc-titulo').value = '';
+  renderColorSwatches('kc-color-swatches', KANBAN_COLORS[0]);
+  openModal('kanban-columna');
+}
+function openEditColumnaModal(id) {
+  var col = kanbanColumnas.find(function(c) { return c.id === id; });
+  if (!col) return;
+  kanbanEditColumnaId = id;
+  document.getElementById('kanban-columna-modal-title').textContent = '📋 Editar columna';
+  document.getElementById('kc-titulo').value = col.titulo;
+  renderColorSwatches('kc-color-swatches', col.color);
+  openModal('kanban-columna');
+}
+function submitKanbanColumna() {
+  var titulo = document.getElementById('kc-titulo').value.trim();
+  var color = document.getElementById('kc-color-swatches').getAttribute('data-selected-color') || KANBAN_COLORS[0];
+  if (!titulo) { showToast('El título es obligatorio'); return; }
+  if (kanbanEditColumnaId) {
+    var col = kanbanColumnas.find(function(c) { return c.id === kanbanEditColumnaId; });
+    col.titulo = titulo;
+    col.color = color;
+    guardarKanban('/api/kanban-columnas/' + col.id, 'PUT', { titulo: titulo, color: color });
+  } else {
+    var col = { id: kanbanNextTempId--, titulo: titulo, color: color, orden: kanbanColumnas.length + 1 };
+    kanbanColumnas.push(col);
+    guardarKanban('/api/kanban-columnas', 'POST', col);
+  }
+  closeModal('kanban-columna');
+  renderKanbanBoard();
+}
+
+// ----- Etiquetas -----
+function openManageEtiquetasModal() {
+  renderEtiquetasList();
+  renderColorSwatches('ke-color-swatches', KANBAN_COLORS[0]);
+  document.getElementById('ke-nombre').value = '';
+  openModal('kanban-etiquetas');
+}
+function renderEtiquetasList() {
+  var html = kanbanEtiquetas.map(function(et) {
+    return '<div class="kanban-etiqueta-row">' +
+      '<span class="kanban-label-chip" style="background:' + et.color + '">' + et.nombre + '</span>' +
+      '<span class="kanban-etiqueta-row-name"></span>' +
+      '<button class="btn-danger-sm" style="padding:3px 8px;" onclick="eliminarEtiqueta(' + et.id + ')">🗑️</button>' +
+    '</div>';
+  }).join('');
+  document.getElementById('kanban-etiquetas-list').innerHTML = html || '<div style="font-size:12px;color:var(--sec-1);">Sin etiquetas todavía</div>';
+}
+function submitNuevaEtiqueta() {
+  var nombre = document.getElementById('ke-nombre').value.trim();
+  var color = document.getElementById('ke-color-swatches').getAttribute('data-selected-color') || KANBAN_COLORS[0];
+  if (!nombre) { showToast('El nombre es obligatorio'); return; }
+  var et = { id: kanbanNextTempId--, nombre: nombre, color: color };
+  kanbanEtiquetas.push(et);
+  document.getElementById('ke-nombre').value = '';
+  renderEtiquetasList();
+  guardarKanban('/api/kanban-etiquetas', 'POST', et);
+}
+function eliminarEtiqueta(id) {
+  kanbanEtiquetas = kanbanEtiquetas.filter(function(e) { return e.id !== id; });
+  kanbanTarjetas.forEach(function(t) { t.etiquetas = (t.etiquetas || []).filter(function(eid) { return eid !== id; }); });
+  renderEtiquetasList();
+  renderKanbanBoard();
+  guardarKanban('/api/kanban-etiquetas/' + id, 'DELETE', { id: id });
+}
+
 loadAll();
 setInterval(loadAll, 30000);
 </script>
 <div id="modal-foto-ampliada" onclick="closeFotoModal()">
   <button class="foto-modal-close" onclick="closeFotoModal()">×</button>
   <img id="modal-foto-ampliada-img" src="" alt="foto ampliada" onclick="event.stopPropagation()">
+</div>
+
+<!-- KANBAN: DRAWER TARJETA -->
+<div class="kanban-drawer-overlay" id="kanban-drawer-overlay" onclick="closeTarjetaDrawer()"></div>
+<div class="kanban-drawer" id="kanban-drawer">
+  <div class="kanban-drawer-header">
+    <span class="kanban-drawer-title">Editar tarjeta</span>
+    <button class="kanban-drawer-close" onclick="closeTarjetaDrawer()">✕</button>
+  </div>
+  <div class="kanban-drawer-body">
+    <div class="form-group"><label class="form-label">Título</label><input class="form-input" id="kt-titulo" onblur="saveTarjetaField('titulo', this.value)"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Responsable</label><input class="form-input" id="kt-responsable" onblur="saveTarjetaField('responsable', this.value)"></div>
+      <div class="form-group"><label class="form-label">Fecha inicio</label><input type="date" class="form-input" id="kt-fecha" onblur="saveTarjetaField('fecha_inicio', this.value)"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Tipo de producto</label><input class="form-input" id="kt-tipo" onblur="saveTarjetaField('tipo_producto', this.value)"></div>
+    <div class="form-group"><label class="form-label">Descripción</label><textarea class="setup-notes" id="kt-descripcion" onblur="saveTarjetaField('descripcion', this.value)"></textarea></div>
+    <div class="form-group"><label class="form-label">Banco de ensayo relacionado</label>
+      <select class="form-input" id="kt-banco" onchange="saveTarjetaField('banco_id', this.value || null)">
+        <option value="">— Ninguno —</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Columna actual</label>
+      <select class="form-input" id="kt-columna" onchange="moverTarjetaColumna(this.value)"></select>
+    </div>
+    <div class="form-group"><label class="form-label">Etiquetas</label>
+      <div class="kanban-label-picker" id="kt-labels"></div>
+    </div>
+  </div>
+  <div class="kanban-drawer-footer">
+    <button class="btn-danger-sm" onclick="eliminarTarjetaActual()">🗑️ Eliminar tarjeta</button>
+    <button class="btn-secondary" onclick="closeTarjetaDrawer()">Cerrar</button>
+  </div>
+</div>
+
+<!-- MODAL KANBAN COLUMNA -->
+<div class="modal-overlay" id="modal-kanban-columna">
+  <div class="modal">
+    <div class="modal-title" id="kanban-columna-modal-title">📋 Nueva columna</div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Título</label><input class="form-input" id="kc-titulo" placeholder="ej: En revisión"></div>
+      <div class="form-group"><label class="form-label">Color</label>
+        <div class="color-swatch-row" id="kc-color-swatches" data-selected-color="#006ee1"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('kanban-columna')">Cancelar</button>
+      <button class="btn-primary" onclick="submitKanbanColumna()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL KANBAN ETIQUETAS -->
+<div class="modal-overlay" id="modal-kanban-etiquetas">
+  <div class="modal">
+    <div class="modal-title">🏷️ Gestionar Etiquetas</div>
+    <div class="modal-body">
+      <div id="kanban-etiquetas-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+      <div style="height:0.5px;background:var(--sandgrau);margin:4px 0;"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nueva etiqueta</label><input class="form-input" id="ke-nombre" placeholder="ej: Urgente"></div>
+        <div class="form-group"><label class="form-label">Color</label>
+          <div class="color-swatch-row" id="ke-color-swatches" data-selected-color="#006ee1"></div>
+        </div>
+      </div>
+      <button class="btn-secondary" style="align-self:flex-start;" onclick="submitNuevaEtiqueta()">+ Añadir etiqueta</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="closeModal('kanban-etiquetas')">Listo</button>
+    </div>
+  </div>
 </div>
 </body>
 </html>

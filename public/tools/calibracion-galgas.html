@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calibración de Galgas Extensiométricas</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --geze-blau: #002364;
+    --geze-gelb: #fddc35;
+    --akzent-blau: #006ee1;
+    --sandgrau: #e0e1da;
+    --sandgrau-hell: #f5f7f5;
+    --white: #ffffff;
+    --sec-2: #767878;
+    --green: #1a7a4a;
+    --danger: #c0392b;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, 'Inter', sans-serif; background: var(--sandgrau-hell); color: var(--geze-blau); padding: 24px; min-height: 100vh; }
+  .page { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+  .card { background: var(--white); border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,35,100,0.07); border: 0.5px solid var(--sandgrau); }
+  .card-title { font-size: 14px; font-weight: 700; color: var(--geze-blau); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--geze-gelb); display: flex; align-items: center; gap: 8px; }
+  .step-badge { background: var(--geze-blau); color: var(--geze-gelb); font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px; }
+  .form-row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 160px; }
+  .form-label { font-size: 12px; font-weight: 600; color: var(--geze-blau); }
+  .form-hint { font-size: 11px; color: var(--sec-2); font-style: italic; line-height: 1.4; }
+  .form-input { padding: 9px 12px; border: 1px solid var(--sandgrau); border-radius: 6px; font-size: 13px; font-family: inherit; color: var(--geze-blau); outline: none; transition: border-color 150ms; }
+  .form-input:focus { border-color: var(--akzent-blau); }
+  select.form-input { cursor: pointer; }
+  .tabla-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th { background: var(--geze-blau); color: var(--white); padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; }
+  tbody tr:nth-child(even) { background: var(--sandgrau-hell); }
+  tbody td { padding: 9px 12px; border-bottom: 0.5px solid var(--sandgrau); vertical-align: middle; }
+  .td-input { background: none; border: none; font-family: inherit; font-size: 13px; color: var(--geze-blau); width: 100%; outline: none; padding: 2px 4px; border-radius: 3px; }
+  .td-input:focus { background: rgba(0,110,225,0.06); }
+  input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; }
+  .td-calc { color: var(--sec-2); font-family: monospace; font-size: 12px; }
+  .td-k { color: var(--green); font-weight: 600; font-family: monospace; font-size: 12px; }
+  .btn-del { background: none; border: none; cursor: pointer; color: var(--danger); font-size: 18px; padding: 0 4px; line-height: 1; }
+  .btn-primary { background: var(--geze-blau); color: var(--white); border: none; padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 150ms; }
+  .btn-primary:hover { background: var(--akzent-blau); }
+  .btn-secondary { background: var(--sandgrau-hell); color: var(--geze-blau); border: 1px solid var(--sandgrau); padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .btn-danger { background: var(--danger); color: var(--white); border: none; padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .resultado-k { background: linear-gradient(135deg, var(--geze-blau), #003a9e); color: var(--white); border-radius: 10px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .resultado-k-label { font-size: 13px; opacity: 0.8; margin-bottom: 4px; }
+  .resultado-k-value { font-size: 32px; font-weight: 700; color: var(--geze-gelb); font-family: monospace; }
+  .leyenda { background: var(--sandgrau-hell); border-radius: 8px; padding: 16px; border-left: 3px solid var(--akzent-blau); }
+  .leyenda-item { display: flex; gap: 8px; margin-bottom: 8px; font-size: 12px; }
+  .leyenda-item:last-child { margin-bottom: 0; }
+  .leyenda-term { font-weight: 700; color: var(--geze-blau); min-width: 180px; }
+  .leyenda-def { color: var(--sec-2); line-height: 1.5; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+  .result-box { background: var(--sandgrau-hell); border: 1px solid var(--sandgrau); border-radius: 8px; padding: 14px 16px; }
+  .result-box-label { font-size: 11px; color: var(--sec-2); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .result-box-value { font-size: 20px; font-weight: 700; color: var(--geze-blau); font-family: monospace; }
+  .result-box-value.highlight { color: var(--green); }
+  .chart-container { position: relative; height: 320px; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+
+  /* HISTORIAL */
+  .historial-list { display: flex; flex-direction: column; gap: 10px; }
+  .historial-item { background: var(--sandgrau-hell); border: 1px solid var(--sandgrau); border-radius: 8px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; cursor: pointer; transition: border-color 150ms, box-shadow 150ms; }
+  .historial-item:hover { border-color: var(--akzent-blau); box-shadow: 0 2px 8px rgba(0,110,225,0.1); }
+  .historial-item-name { font-size: 14px; font-weight: 600; color: var(--geze-blau); }
+  .historial-item-meta { font-size: 12px; color: var(--sec-2); margin-top: 2px; }
+  .historial-item-k { font-size: 13px; font-family: monospace; color: var(--green); font-weight: 700; }
+  .historial-actions { display: flex; gap: 6px; }
+  .btn-sm { padding: 5px 10px; font-size: 11px; font-weight: 600; border-radius: 4px; cursor: pointer; font-family: inherit; border: 1px solid var(--sandgrau); background: var(--white); color: var(--geze-blau); }
+  .btn-sm:hover { border-color: var(--akzent-blau); color: var(--akzent-blau); }
+  .btn-sm.danger { color: var(--danger); }
+  .btn-sm.danger:hover { border-color: var(--danger); }
+  .empty-state { text-align: center; padding: 40px; color: var(--sec-2); font-size: 13px; }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--white); border-radius: 12px; padding: 28px; width: 500px; max-width: 95vw; box-shadow: 0 8px 40px rgba(0,0,0,0.2); }
+  .modal-title { font-size: 16px; font-weight: 700; color: var(--geze-blau); margin-bottom: 20px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .tag { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-right: 4px; }
+  .tag-blue { background: #e8f2ff; color: var(--akzent-blau); }
+  .tag-green { background: #e8f5ee; color: var(--green); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <div>
+      <div style="font-size:20px;font-weight:700;color:var(--geze-blau);">Calibración de Galgas Extensiométricas</div>
+      <div style="font-size:13px;color:var(--sec-2);margin-top:2px;">Historial de calibraciones y cálculo del Factor K</div>
+    </div>
+  </div>
+
+  <!-- VISTA: HISTORIAL -->
+  <div id="view-historial" class="view active">
+    <div class="card">
+      <div class="card-title">📋 Calibraciones guardadas</div>
+      <div id="historial-list" class="historial-list">
+        <div class="empty-state">No hay calibraciones guardadas.<br>Crea la primera con el botón de abajo.</div>
+      </div>
+      <div class="actions" style="margin-top:16px;">
+        <button class="btn-primary" onclick="nuevaCalibracion()">+ Nueva calibración</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VISTA: FORMULARIO CALIBRACIÓN -->
+  <div id="view-form" class="view">
+
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <button class="btn-secondary" onclick="volverHistorial()">← Volver</button>
+      <span style="font-size:16px;font-weight:700;color:var(--geze-blau);" id="form-titulo">Nueva calibración</span>
+    </div>
+
+    <!-- PASO 1: DATOS DEL PRODUCTO -->
+    <div class="card">
+      <div class="card-title"><span class="step-badge">Paso 1</span> Datos del producto y configuración</div>
+      <div class="grid-2" style="margin-bottom:14px;">
+        <div class="form-group">
+          <label class="form-label">Nombre del producto</label>
+          <input class="form-input" type="text" id="cal-nombre" placeholder="ej: Brazo GC 350">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tipo de brazo</label>
+          <select class="form-input" id="cal-tipo-brazo">
+            <option value="">— Selecciona —</option>
+            <option value="articulado">Brazo articulado</option>
+            <option value="guia">Brazo con guía</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Tipo de conexión</label>
+          <select class="form-input" id="cal-tipo-conexion">
+            <option value="">— Selecciona —</option>
+            <option value="full-bridge">Full Bridge</option>
+            <option value="half-bridge">Half Bridge</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Longitud del brazo (cm) <span style="font-weight:400;color:var(--sec-2);font-style:italic;">— distancia desde el eje hasta el punto de aplicación de fuerza</span></label>
+          <input class="form-input" type="number" id="longitud-cm" placeholder="ej: 33" step="0.1" oninput="onLongitudChange()">
+        </div>
+      </div>
+      <div style="margin-top:12px;" class="result-box" style="max-width:200px;">
+        <div class="result-box-label">Longitud en metros</div>
+        <div class="result-box-value" id="longitud-m" style="font-size:16px;">—</div>
+      </div>
+    </div>
+
+    <!-- PASO 2: TABLA DE MEDICIONES -->
+    <div class="card">
+      <div class="card-title"><span class="step-badge">Paso 2</span> Tabla de mediciones — Linealidad de la galga</div>
+      <div class="tabla-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Col. A — Fuerza aplicada (N)</th>
+              <th>Col. D — Lectura QuantumX (mv/v)</th>
+              <th>Col. E — Conversión (N)</th>
+              <th>Col. F — Factor K</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tabla-body"></tbody>
+        </table>
+      </div>
+      <div class="actions">
+        <button class="btn-primary" onclick="addFila()">+ Añadir medición</button>
+        <span style="font-size:12px;color:var(--sec-2);">Mínimo 3 puntos para una calibración fiable</span>
+      </div>
+      <div style="margin-top:16px;" class="leyenda">
+        <div style="font-size:11px;font-weight:700;color:var(--geze-blau);margin-bottom:8px;">Leyenda</div>
+        <div class="leyenda-item"><span class="leyenda-term">Fuerza aplicada (N)</span><span class="leyenda-def">Fuerza que se aplica en el extremo del brazo opuesto al eje</span></div>
+        <div class="leyenda-item"><span class="leyenda-term">Lectura QuantumX (mv/v)</span><span class="leyenda-def">Valor que muestra el sistema QuantumX mientras se aplica la fuerza</span></div>
+        <div class="leyenda-item"><span class="leyenda-term">Conversión a fuerza (N)</span><span class="leyenda-def">E = N_aplicados × longitud_brazo_metros</span></div>
+        <div class="leyenda-item"><span class="leyenda-term">Factor K (por punto)</span><span class="leyenda-def">K = E / D — factor de compensación individual para cada punto</span></div>
+      </div>
+    </div>
+
+    <!-- GRÁFICA -->
+    <div class="card">
+      <div class="card-title"><span class="step-badge">Paso 2</span> Gráfica de linealidad</div>
+      <div class="chart-container">
+        <canvas id="chart-linealidad"></canvas>
+      </div>
+      <div style="font-size:11px;color:var(--sec-2);margin-top:8px;text-align:center;">
+        Eje X: Fuerza aplicada (N) — Eje Y: Lectura QuantumX (mv/v) — Los puntos deben seguir la línea de tendencia
+      </div>
+    </div>
+
+    <!-- RESULTADO K QUANTUM -->
+    <div class="card">
+      <div class="card-title"><span class="step-badge">Resultado</span> K-factor QuantumX</div>
+      <div class="resultado-k">
+        <div>
+          <div class="resultado-k-label">K-factor Quantum — promedio de todos los puntos F27</div>
+          <div class="resultado-k-value" id="kfactor-quantum">—</div>
+        </div>
+        <div style="font-size:12px;opacity:0.7;max-width:300px;line-height:1.6;">
+          Promedio de los factores K individuales (col. F). Se actualiza automáticamente al añadir o eliminar filas.
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 3: BECKHOFF -->
+    <div class="card">
+      <div class="card-title"><span class="step-badge">Paso 3</span> Conversión para Beckhoff</div>
+      <div class="grid-3" style="margin-bottom:16px;">
+        <div class="form-group">
+          <label class="form-label">Offset QuantumX</label>
+          <span class="form-hint">Valor de offset con el brazo en reposo, tras pulsar "Reset a 0" en el QuantumX</span>
+          <input class="form-input" type="number" id="offset-quantum" placeholder="ej: 8.96" step="0.01" oninput="calcBeckhoff()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Offset Beckhoff</label>
+          <span class="form-hint">Brazo conectado al driver sin conectar a puerta o hoja. Valor que mide el sistema Beckhoff en libre de torsiones.</span>
+          <input class="form-input" type="number" id="offset-beckhoff" placeholder="ej: 56549" step="1" oninput="calcBeckhoff()">
+        </div>
+        <div class="result-box">
+          <div class="result-box-label">K-factor Beckhoff — RESULTADO FINAL</div>
+          <div class="result-box-value highlight" id="kfactor-beckhoff" style="font-size:16px;">—</div>
+          <div style="font-size:10px;color:var(--sec-2);margin-top:6px;">= (K-quantum × Offset Quantum) / Offset Beckhoff</div>
+        </div>
+      </div>
+      <div class="leyenda">
+        <div style="font-size:11px;font-weight:700;color:var(--geze-blau);margin-bottom:8px;">Leyenda de valores</div>
+        <div class="leyenda-item"><span class="leyenda-term">Offset QuantumX</span><span class="leyenda-def">Cuando se conecta la galga al QuantumX, se debe dejar el brazo en reposo sin estar en la prensa o ejerciendo algún tipo de torsión. El valor que buscamos será cuando presionemos sobre la función de reset a 0 y podamos ver el valor del offset en la tabla.</span></div>
+        <div class="leyenda-item"><span class="leyenda-term">Offset Beckhoff</span><span class="leyenda-def">Se debe conectar el brazo al driver, pero el brazo no debe estar conectado a la puerta o hoja. Estando en libre de torsiones, se va al dashboard y se toma el valor que está midiendo el sistema Beckhoff.</span></div>
+        <div class="leyenda-item"><span class="leyenda-term">K-factor QuantumX</span><span class="leyenda-def">Valor resultante de la calibración de la galga utilizando el QuantumX. Promedio de los factores K medidos a diferentes fuerzas.</span></div>
+        <div class="leyenda-item"><span class="leyenda-term">K-factor Beckhoff</span><span class="leyenda-def">Factor de conversión para el sistema Beckhoff. Fórmula: (K-factor QuantumX × Offset QuantumX) / Offset Beckhoff</span></div>
+      </div>
+    </div>
+
+    <!-- GUARDAR -->
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <button class="btn-primary" onclick="guardarCalibracion()">💾 Guardar calibración</button>
+      <button class="btn-secondary" onclick="volverHistorial()">Cancelar</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL NUEVA/EDITAR -->
+<div class="modal-overlay" id="modal-nueva">
+  <div class="modal">
+    <div class="modal-title" id="modal-titulo">Nueva calibración</div>
+    <p style="font-size:13px;color:var(--sec-2);margin-bottom:16px;">Introduce un nombre para identificar esta calibración en el historial.</p>
+    <div class="form-group">
+      <label class="form-label">Nombre de la calibración</label>
+      <input class="form-input" type="text" id="modal-nombre-cal" placeholder="ej: Brazo GC350 - Serie 001">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-primary" onclick="confirmarNueva()">Continuar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =====================
+// ESTADO GLOBAL
+// =====================
+var calibraciones = JSON.parse(localStorage.getItem('calibraciones') || '[]');
+var filas = [];
+var longitudMetros = null;
+var chart = null;
+var editandoId = null;
+
+// =====================
+// NAVEGACIÓN
+// =====================
+function showView(name) {
+  document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+  document.getElementById('view-' + name).classList.add('active');
+}
+
+function volverHistorial() {
+  showView('historial');
+  renderHistorial();
+  resetFormulario();
+}
+
+// =====================
+// HISTORIAL
+// =====================
+function renderHistorial() {
+  var el = document.getElementById('historial-list');
+  if (!calibraciones.length) {
+    el.innerHTML = '<div class="empty-state">No hay calibraciones guardadas.<br>Crea la primera con el botón de abajo.</div>';
+    return;
+  }
+  el.innerHTML = calibraciones.map(function(c, i) {
+    var kq = c.kfactorQuantum ? parseFloat(c.kfactorQuantum).toFixed(8) : '—';
+    var kb = c.kfactorBeckhoff ? parseFloat(c.kfactorBeckhoff).toFixed(10) : '—';
+    return '<div class="historial-item">' +
+      '<div onclick="abrirCalibracion(' + i + ')" style="flex:1;">' +
+        '<div class="historial-item-name">' + c.nombre + '</div>' +
+        '<div class="historial-item-meta">' +
+          (c.tipoBrazo ? '<span class="tag tag-blue">' + c.tipoBrazo + '</span>' : '') +
+          (c.tipoConexion ? '<span class="tag tag-green">' + c.tipoConexion + '</span>' : '') +
+          ' · ' + (c.fecha || '—') +
+          (c.longitud ? ' · ' + c.longitud + ' cm' : '') +
+        '</div>' +
+        '<div class="historial-item-k">K-Quantum: ' + kq + ' · K-Beckhoff: ' + kb + '</div>' +
+      '</div>' +
+      '<div class="historial-actions">' +
+        '<button class="btn-sm" onclick="editarCalibracion(' + i + ')">✏️ Editar</button>' +
+        '<button class="btn-sm danger" onclick="eliminarCalibracion(' + i + ')">🗑️</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function nuevaCalibracion() {
+  editandoId = null;
+  document.getElementById('modal-titulo').textContent = 'Nueva calibración';
+  document.getElementById('modal-nombre-cal').value = '';
+  document.getElementById('modal-nueva').classList.add('open');
+}
+
+function cerrarModal() {
+  document.getElementById('modal-nueva').classList.remove('open');
+}
+
+function confirmarNueva() {
+  var nombre = document.getElementById('modal-nombre-cal').value.trim();
+  if (!nombre) { alert('Introduce un nombre para la calibración'); return; }
+  cerrarModal();
+  resetFormulario();
+  document.getElementById('form-titulo').textContent = nombre;
+  document.getElementById('cal-nombre').value = nombre;
+  showView('form');
+  addFila(); addFila(); addFila();
+}
+
+function abrirCalibracion(idx) {
+  var c = calibraciones[idx];
+  cargarCalibracion(c, idx);
+}
+
+function editarCalibracion(idx) {
+  var c = calibraciones[idx];
+  cargarCalibracion(c, idx);
+}
+
+function cargarCalibracion(c, idx) {
+  editandoId = idx;
+  resetFormulario();
+  document.getElementById('form-titulo').textContent = 'Editando: ' + c.nombre;
+  document.getElementById('cal-nombre').value = c.nombre || '';
+  document.getElementById('cal-tipo-brazo').value = c.tipoBrazo || '';
+  document.getElementById('cal-tipo-conexion').value = c.tipoConexion || '';
+  document.getElementById('longitud-cm').value = c.longitud || '';
+  document.getElementById('offset-quantum').value = c.offsetQuantum || '';
+  document.getElementById('offset-beckhoff').value = c.offsetBeckhoff || '';
+
+  if (c.longitud) {
+    longitudMetros = parseFloat(c.longitud) / 100;
+    document.getElementById('longitud-m').textContent = longitudMetros.toFixed(4) + ' m';
+  }
+
+  filas = (c.filas || []).map(function(f) { return { n: f.n, d: f.d }; });
+  showView('form');
+  recalcular();
+}
+
+function eliminarCalibracion(idx) {
+  if (!confirm('¿Eliminar esta calibración? Esta acción no se puede deshacer.')) return;
+  calibraciones.splice(idx, 1);
+  guardarEnStorage();
+  renderHistorial();
+}
+
+function guardarCalibracion() {
+  var nombre = document.getElementById('cal-nombre').value.trim();
+  if (!nombre) { alert('Introduce un nombre para el producto'); return; }
+
+  var kqEl = document.getElementById('kfactor-quantum').textContent;
+  var kbEl = document.getElementById('kfactor-beckhoff').textContent;
+
+  var cal = {
+    nombre: nombre,
+    tipoBrazo: document.getElementById('cal-tipo-brazo').value,
+    tipoConexion: document.getElementById('cal-tipo-conexion').value,
+    longitud: document.getElementById('longitud-cm').value,
+    offsetQuantum: document.getElementById('offset-quantum').value,
+    offsetBeckhoff: document.getElementById('offset-beckhoff').value,
+    filas: filas.map(function(f) { return { n: f.n, d: f.d }; }),
+    kfactorQuantum: kqEl !== '—' ? kqEl : null,
+    kfactorBeckhoff: kbEl !== '—' ? kbEl : null,
+    fecha: new Date().toLocaleDateString('es-ES')
+  };
+
+  if (editandoId !== null) {
+    calibraciones[editandoId] = cal;
+  } else {
+    calibraciones.push(cal);
+  }
+
+  guardarEnStorage();
+  alert('Calibración guardada correctamente');
+  volverHistorial();
+}
+
+function guardarEnStorage() {
+  localStorage.setItem('calibraciones', JSON.stringify(calibraciones));
+}
+
+// =====================
+// FORMULARIO
+// =====================
+function resetFormulario() {
+  filas = [];
+  longitudMetros = null;
+  editandoId = null;
+  document.getElementById('cal-nombre').value = '';
+  document.getElementById('cal-tipo-brazo').value = '';
+  document.getElementById('cal-tipo-conexion').value = '';
+  document.getElementById('longitud-cm').value = '';
+  document.getElementById('longitud-m').textContent = '—';
+  document.getElementById('offset-quantum').value = '';
+  document.getElementById('offset-beckhoff').value = '';
+  document.getElementById('kfactor-quantum').textContent = '—';
+  document.getElementById('kfactor-beckhoff').textContent = '—';
+  document.getElementById('tabla-body').innerHTML = '';
+  if (chart) { chart.destroy(); chart = null; }
+}
+
+function onLongitudChange() {
+  var cm = parseFloat(document.getElementById('longitud-cm').value);
+  if (!isNaN(cm) && cm > 0) {
+    longitudMetros = cm / 100;
+    document.getElementById('longitud-m').textContent = longitudMetros.toFixed(4) + ' m';
+  } else {
+    longitudMetros = null;
+    document.getElementById('longitud-m').textContent = '—';
+  }
+  recalcular();
+}
+
+function addFila() {
+  filas.push({ n: '', d: '' });
+  renderTabla();
+}
+
+function removeFila(idx) {
+  filas.splice(idx, 1);
+  recalcular();
+}
+
+function onFilaChange(idx, campo, val) {
+  filas[idx][campo] = val;
+  recalcular();
+}
+
+function renderTabla() {
+  var tbody = document.getElementById('tabla-body');
+  tbody.innerHTML = filas.map(function(f, i) {
+    var e = calcE(f.n);
+    var k = calcK(f.n, f.d);
+    return '<tr>' +
+      '<td style="color:var(--sec-2);font-size:12px;">' + (i+1) + '</td>' +
+      '<td><input class="td-input" type="text" inputmode="decimal" value="' + (f.n||'') + '" placeholder="ej: 50" oninput="onFilaChange(' + i + ',\'n\',this.value)"></td>' +
+      '<td><input class="td-input" type="text" inputmode="decimal" value="' + (f.d||'') + '" placeholder="ej: 63" oninput="onFilaChange(' + i + ',\'d\',this.value)"></td>' +
+      '<td class="td-calc">' + (e !== null ? e.toFixed(4) : '—') + '</td>' +
+      '<td class="td-k">' + (k !== null ? k.toFixed(8) : '—') + '</td>' +
+      '<td><button class="btn-del" onclick="removeFila(' + i + ')">×</button></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function calcE(n) {
+  var nVal = parseFloat(n);
+  if (isNaN(nVal) || longitudMetros === null) return null;
+  return nVal * longitudMetros;
+}
+
+function calcK(n, d) {
+  var e = calcE(n);
+  var dVal = parseFloat(d);
+  if (e === null || isNaN(dVal) || dVal === 0) return null;
+  return e / dVal;
+}
+
+function recalcular() {
+  renderTabla();
+
+  // K-factor: promedio de todos los K válidos
+  var ks = [];
+  for (var i = 0; i < filas.length; i++) {
+    var k = calcK(filas[i].n, filas[i].d);
+    if (k !== null) ks.push(k);
+  }
+
+  var kPromedio = null;
+  if (ks.length > 0) {
+    var suma = 0;
+    for (var j = 0; j < ks.length; j++) { suma += ks[j]; }
+    kPromedio = suma / ks.length;
+  }
+
+  document.getElementById('kfactor-quantum').textContent = kPromedio !== null ? kPromedio.toFixed(8) : '—';
+  actualizarGrafica();
+  calcBeckhoff();
+}
+
+function calcBeckhoff() {
+  var kqText = document.getElementById('kfactor-quantum').textContent;
+  var kq = parseFloat(kqText);
+  var oq = parseFloat(document.getElementById('offset-quantum').value);
+  var ob = parseFloat(document.getElementById('offset-beckhoff').value);
+
+  if (!isNaN(kq) && !isNaN(oq) && !isNaN(ob) && ob !== 0) {
+    var kb = (kq * oq) / ob;
+    document.getElementById('kfactor-beckhoff').textContent = kb.toFixed(10);
+  } else {
+    document.getElementById('kfactor-beckhoff').textContent = '—';
+  }
+}
+
+function actualizarGrafica() {
+  // Eje X: Columna A (N aplicados), Eje Y: Columna D (mv/v lectura QuantumX)
+  var puntos = [];
+  for (var i = 0; i < filas.length; i++) {
+    var nVal = parseFloat(filas[i].n);
+    var dVal = parseFloat(filas[i].d);
+    if (!isNaN(nVal) && nVal > 0 && !isNaN(dVal) && dVal > 0) {
+      puntos.push({ x: nVal, y: dVal });
+    }
+  }
+
+  // Línea de tendencia (regresión lineal)
+  var tendencia = [];
+  if (puntos.length >= 2) {
+    var n = puntos.length;
+    var sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+    for (var j = 0; j < n; j++) {
+      sumX += puntos[j].x; sumY += puntos[j].y;
+      sumXY += puntos[j].x * puntos[j].y;
+      sumX2 += puntos[j].x * puntos[j].x;
+    }
+    var m = (n*sumXY - sumX*sumY) / (n*sumX2 - sumX*sumX);
+    var b = (sumY - m*sumX) / n;
+    var xs = puntos.map(function(p){return p.x;});
+    var minX = Math.min.apply(null, xs);
+    var maxX = Math.max.apply(null, xs);
+    tendencia = [{ x: minX, y: m*minX + b }, { x: maxX, y: m*maxX + b }];
+  }
+
+  if (chart) {
+    chart.data.datasets[0].data = puntos;
+    chart.data.datasets[1].data = tendencia;
+    chart.update();
+    return;
+  }
+
+  var ctx = document.getElementById('chart-linealidad').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [
+        {
+          label: 'Mediciones (N vs mv/v)',
+          data: puntos,
+          backgroundColor: '#006ee1',
+          pointRadius: 7,
+          pointHoverRadius: 9,
+          showLine: false
+        },
+        {
+          label: 'Línea de tendencia',
+          data: tendencia,
+          borderColor: '#002364',
+          backgroundColor: 'transparent',
+          pointRadius: 0,
+          showLine: true,
+          borderWidth: 2,
+          borderDash: [6, 3]
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top' },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              return 'N aplicados: ' + ctx.parsed.x + ' | QuantumX: ' + ctx.parsed.y + ' mv/v';
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Fuerza aplicada — Col. A (N)', color: '#002364', font: { weight: 'bold' } },
+          min: 0
+        },
+        y: {
+          title: { display: true, text: 'Lectura QuantumX — Col. D (mv/v)', color: '#002364', font: { weight: 'bold' } },
+          min: 0
+        }
+      }
+    }
+  });
+}
+
+// Init
+renderHistorial();
+</script>
+</body>
+</html>
