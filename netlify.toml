@@ -208,3 +208,93 @@
   from = "/api/delete-foto-paso"
   to = "/.netlify/functions/api-delete-foto-paso"
   status = 200
+
+[[redirects]]
+  from = "/api/calibraciones-galgas"
+  to = "/.netlify/functions/api-calibraciones-galgas"
+  status = 200
+
+[[redirects]]
+  from = "/api/add-calibracion-galgas"
+  to = "/.netlify/functions/api-add-calibracion-galgas"
+  status = 200
+
+[[redirects]]
+  from = "/api/edit-calibracion-galgas"
+  to = "/.netlify/functions/api-edit-calibracion-galgas"
+  status = 200
+
+[[redirects]]
+  from = "/api/delete-calibracion-galgas"
+  to = "/.netlify/functions/api-delete-calibracion-galgas"
+  status = 200
+
+[[redirects]]
+  from = "/api/kanban-columnas"
+  to = "/.netlify/functions/api-kanban-columnas"
+  status = 200
+
+[[redirects]]
+  from = "/api/add-kanban-columna"
+  to = "/.netlify/functions/api-add-kanban-columna"
+  status = 200
+
+[[redirects]]
+  from = "/api/edit-kanban-columna"
+  to = "/.netlify/functions/api-edit-kanban-columna"
+  status = 200
+
+[[redirects]]
+  from = "/api/delete-kanban-columna"
+  to = "/.netlify/functions/api-delete-kanban-columna"
+  status = 200
+
+[[redirects]]
+  from = "/api/kanban-tarjetas"
+  to = "/.netlify/functions/api-kanban-tarjetas"
+  status = 200
+
+[[redirects]]
+  from = "/api/add-kanban-tarjeta"
+  to = "/.netlify/functions/api-add-kanban-tarjeta"
+  status = 200
+
+[[redirects]]
+  from = "/api/edit-kanban-tarjeta"
+  to = "/.netlify/functions/api-edit-kanban-tarjeta"
+  status = 200
+
+[[redirects]]
+  from = "/api/delete-kanban-tarjeta"
+  to = "/.netlify/functions/api-delete-kanban-tarjeta"
+  status = 200
+
+[[redirects]]
+  from = "/api/move-kanban-tarjeta"
+  to = "/.netlify/functions/api-move-kanban-tarjeta"
+  status = 200
+
+[[redirects]]
+  from = "/api/kanban-etiquetas"
+  to = "/.netlify/functions/api-kanban-etiquetas"
+  status = 200
+
+[[redirects]]
+  from = "/api/add-kanban-etiqueta"
+  to = "/.netlify/functions/api-add-kanban-etiqueta"
+  status = 200
+
+[[redirects]]
+  from = "/api/delete-kanban-etiqueta"
+  to = "/.netlify/functions/api-delete-kanban-etiqueta"
+  status = 200
+
+[[redirects]]
+  from = "/api/add-kanban-tarjeta-etiqueta"
+  to = "/.netlify/functions/api-add-kanban-tarjeta-etiqueta"
+  status = 200
+
+[[redirects]]
+  from = "/api/delete-kanban-tarjeta-etiqueta"
+  to = "/.netlify/functions/api-delete-kanban-tarjeta-etiqueta"
+  status = 200
