@@ -2,12 +2,12 @@ export default async (request) => {
   try {
     const url = new URL(request.url);
     const response = await fetch(
-      "https://stockserver.tail78d0c3.ts.net/webhook/api_kanban_tarjetas" + url.search,
+      "https://stockserver.tail78d0c3.ts.net/glab-api/api/kanban/tarjetas" + url.search,
       { method: "GET" }
     );
     const data = await response.json();
     return new Response(JSON.stringify(data), {
-      status: 200,
+      status: response.status,
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
     });
   } catch (error) {

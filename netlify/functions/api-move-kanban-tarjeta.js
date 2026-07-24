@@ -1,13 +1,13 @@
 export default async (request) => {
   try {
-    const body = await request.json();
+    const { id, ...rest } = await request.json();
     const response = await fetch(
-      "https://stockserver.tail78d0c3.ts.net/webhook/api_move_kanban_tarjeta",
-      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
+      `https://stockserver.tail78d0c3.ts.net/glab-api/api/kanban/tarjetas/${id}/mover`,
+      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(rest) }
     );
     const data = await response.json();
     return new Response(JSON.stringify(data), {
-      status: 200,
+      status: response.status,
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
     });
   } catch (error) {

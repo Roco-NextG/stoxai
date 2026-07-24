@@ -2,12 +2,12 @@ export default async (request) => {
   try {
     const body = await request.json();
     const response = await fetch(
-      "https://stockserver.tail78d0c3.ts.net/webhook/api_add_kanban_etiqueta",
+      "https://stockserver.tail78d0c3.ts.net/glab-api/api/kanban/etiquetas",
       { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
     );
     const data = await response.json();
     return new Response(JSON.stringify(data), {
-      status: 200,
+      status: response.status,
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
     });
   } catch (error) {
