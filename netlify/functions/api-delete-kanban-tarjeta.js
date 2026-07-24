@@ -3,7 +3,7 @@ export default async (request) => {
     const { id } = await request.json();
     const response = await fetch(
       `https://stockserver.tail78d0c3.ts.net/glab-api/api/kanban/tarjetas/${id}`,
-      { method: "DELETE" }
+      { method: "DELETE", headers: { "x-api-key": "GlabAPI2026SecureKey" } }
     );
     const data = await response.json();
     return new Response(JSON.stringify(data), {

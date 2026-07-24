@@ -3,7 +3,7 @@ export default async (request) => {
     const url = new URL(request.url);
     const response = await fetch(
       "https://stockserver.tail78d0c3.ts.net/glab-api/api/calibraciones/galgas" + url.search,
-      { method: "GET" }
+      { method: "GET", headers: { "x-api-key": "GlabAPI2026SecureKey" } }
     );
     const data = await response.json();
     return new Response(JSON.stringify(data), {

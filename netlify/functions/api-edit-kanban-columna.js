@@ -3,7 +3,7 @@ export default async (request) => {
     const { id, ...rest } = await request.json();
     const response = await fetch(
       `https://stockserver.tail78d0c3.ts.net/glab-api/api/kanban/columnas/${id}`,
-      { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(rest) }
+      { method: "PUT", headers: { "Content-Type": "application/json", "x-api-key": "GlabAPI2026SecureKey" }, body: JSON.stringify(rest) }
     );
     const data = await response.json();
     return new Response(JSON.stringify(data), {

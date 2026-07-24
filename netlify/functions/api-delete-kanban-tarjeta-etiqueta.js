@@ -3,7 +3,7 @@ export default async (request) => {
     const { tarjeta_id, etiqueta_id } = await request.json();
     const response = await fetch(
       `https://stockserver.tail78d0c3.ts.net/glab-api/api/kanban/tarjetas/${tarjeta_id}/etiquetas/${etiqueta_id}`,
-      { method: "DELETE" }
+      { method: "DELETE", headers: { "x-api-key": "GlabAPI2026SecureKey" } }
     );
     const data = await response.json();
     return new Response(JSON.stringify(data), {
