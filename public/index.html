@@ -1144,6 +1144,24 @@ document.querySelectorAll('.modal-overlay').forEach(function(el) {
   el.addEventListener('click', function(e) { if (e.target === el) el.classList.remove('open'); });
 });
 
+// Modal de confirmación genérico (reemplaza confirm() nativo)
+var confirmGenericCallback = null;
+function openConfirmModal(title, message, onConfirm) {
+  document.getElementById('confirm-generic-title').textContent = title;
+  document.getElementById('confirm-generic-message').textContent = message;
+  confirmGenericCallback = onConfirm;
+  openModal('confirm-generic');
+}
+function closeConfirmModal() {
+  confirmGenericCallback = null;
+  closeModal('confirm-generic');
+}
+function confirmGenericAction() {
+  var cb = confirmGenericCallback;
+  closeConfirmModal();
+  if (cb) cb();
+}
+
 function formatDate(d) {
   if (!d) return '—';
   return new Date(d).toLocaleDateString('es-ES');
@@ -2526,13 +2544,12 @@ function kanbanRequest(url, options, onSuccess, onFail, attempt) {
   fetch(url, options)
     .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(function(data) {
-      var d = Array.isArray(data) ? data[0] : data;
-      if (d && d.success === false) {
-        showToast(d.message || 'Error al procesar la solicitud');
+      if (data && data.success === false) {
+        showToast(data.message || 'Error al procesar la solicitud');
         if (onFail) onFail();
         return;
       }
-      onSuccess(d);
+      onSuccess(data);
     })
     .catch(function() {
       if (attempt < KANBAN_MAX_RETRIES) {
@@ -2856,12 +2873,13 @@ function guardarCambiosTarjeta() {
 
 function eliminarTarjetaActual() {
   if (kanbanTarjetaActualId == null) return;
-  if (!confirm('¿Eliminar esta tarjeta? Esta acción no se puede deshacer.')) return;
   var id = kanbanTarjetaActualId;
-  kanbanPost('delete-kanban-tarjeta', { id: id }, function(d) {
-    showToast((d && d.message) || 'Tarjeta eliminada');
-    closeTarjetaDrawer();
-    loadKanban();
+  openConfirmModal('🗑️ Eliminar tarjeta', 'Esta acción no se puede deshacer.', function() {
+    kanbanPost('delete-kanban-tarjeta', { id: id }, function(d) {
+      showToast((d && d.message) || 'Tarjeta eliminada');
+      closeTarjetaDrawer();
+      loadKanban();
+    });
   });
 }
 
@@ -2919,10 +2937,11 @@ function submitKanbanColumna() {
 }
 
 function eliminarColumna(id) {
-  if (!confirm('¿Eliminar esta columna y todas sus tarjetas?')) return;
-  kanbanPost('delete-kanban-columna', { id: id }, function(d) {
-    showToast((d && d.message) || 'Columna eliminada');
-    loadKanban();
+  openConfirmModal('🗑️ Eliminar columna', 'Se eliminará esta columna y todas sus tarjetas. Esta acción no se puede deshacer.', function() {
+    kanbanPost('delete-kanban-columna', { id: id }, function(d) {
+      showToast((d && d.message) || 'Columna eliminada');
+      loadKanban();
+    });
   });
 }
 
@@ -3045,6 +3064,18 @@ setInterval(loadAll, 30000);
     </div>
     <div class="modal-actions">
       <button class="btn-primary" onclick="closeModal('kanban-etiquetas')">Listo</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMACIÓN GENÉRICO -->
+<div class="modal-overlay" id="modal-confirm-generic">
+  <div class="modal">
+    <div class="modal-title" id="confirm-generic-title">🗑️ Confirmar</div>
+    <div class="modal-sub" id="confirm-generic-message">Esta acción no se puede deshacer</div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeConfirmModal()">Cancelar</button>
+      <button class="btn-danger-sm" style="padding:8px 16px;font-size:12px;font-weight:500;" id="confirm-generic-btn" onclick="confirmGenericAction()">Eliminar</button>
     </div>
   </div>
 </div>
