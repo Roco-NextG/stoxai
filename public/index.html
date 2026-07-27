@@ -320,16 +320,19 @@
   .kanban-column-iconbtn.danger:hover{color:var(--danger);}
   .kanban-column-body{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:60px;transition:background 150ms;}
   .kanban-column-body.drag-over{background:rgba(0,110,225,0.06);}
-  .kanban-card{background:var(--sandgrau-hell);border:0.5px solid var(--sandgrau);border-radius:8px;padding:10px 12px;cursor:grab;transition:box-shadow 150ms,border-color 150ms;}
-  .kanban-card:hover{border-color:var(--akzent-blau);box-shadow:0 2px 8px rgba(0,35,100,0.08);}
+  .kanban-card{background:var(--sandgrau-hell);border:0.5px solid var(--sandgrau);border-radius:8px;padding:8px 10px;min-height:70px;cursor:grab;transition:box-shadow 150ms;}
+  .kanban-card:hover{box-shadow:0 2px 6px rgba(0,0,0,0.08);}
   .kanban-card.dragging{opacity:0.35;}
-  .kanban-card-title{font-size:13px;font-weight:600;color:var(--geze-blau);margin-bottom:6px;}
-  .kanban-card-meta{font-size:11px;color:var(--sec-2);display:flex;align-items:center;gap:4px;margin-bottom:4px;}
-  .kanban-card-banco{font-size:10px;color:var(--akzent-blau);background:rgba(0,110,225,0.08);padding:2px 7px;border-radius:4px;display:inline-block;margin-top:4px;}
-  .kanban-card-labels{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
-  .kanban-label-chip{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;color:#fff;white-space:nowrap;}
+  .kanban-card-title{font-size:13px;font-weight:600;color:var(--geze-blau);margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-clamp:2;overflow:hidden;}
+  .kanban-card-meta-row{font-size:11px;color:var(--sec-2);display:flex;align-items:center;gap:4px;margin-bottom:4px;flex-wrap:wrap;}
+  .kanban-card-meta-sep{color:var(--sec-2);}
+  .kanban-card-banco{font-size:10px;color:var(--sec-2);display:flex;align-items:center;gap:3px;margin-top:4px;}
+  .kanban-card-labels{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;}
+  .kanban-label-chip{font-size:10px;font-weight:600;padding:1px 6px;border-radius:8px;color:#fff;white-space:nowrap;}
+  .kanban-label-chip-more{font-size:10px;font-weight:600;padding:1px 6px;border-radius:8px;color:var(--sec-2);background:var(--sandgrau);white-space:nowrap;}
 
   /* KANBAN DRAWER */
+  #modal-confirm-generic{z-index:400;}
   .kanban-drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,35,100,0.3);z-index:350;}
   .kanban-drawer-overlay.open{display:block;}
   .kanban-drawer{position:fixed;top:0;right:-440px;width:440px;max-width:92vw;height:100vh;background:var(--white);box-shadow:-10px 0 40px rgba(0,35,100,0.15);z-index:360;transition:right 220ms cubic-bezier(0.16,1,0.3,1);display:flex;flex-direction:column;}
@@ -2534,6 +2537,8 @@ var kanbanTarjetaActualId = null;
 var kanbanTarjetaDraft = null;
 var kanbanDrawerMode = 'edit'; // 'create' | 'edit'
 var kanbanEditColumnaId = null;
+var kanbanTempIdSeq = -1;
+function kanbanNextTempId() { return kanbanTempIdSeq--; }
 
 // ----- API helper: reintenta ante fallo de red/servidor, muestra toast de error si la API responde con error de negocio -----
 var KANBAN_MAX_RETRIES = 3;
@@ -2604,40 +2609,60 @@ function loadKanban() {
   });
 }
 
+function kanbanColumnHtml(col) {
+  var cards = kanbanTarjetas.filter(function(t) { return t.columna_id === col.id; }).sort(function(a, b) { return (a.orden || 0) - (b.orden || 0); });
+  var cardsHtml = cards.map(renderKanbanCard).join('');
+  return '<div class="kanban-column" id="kanban-column-' + col.id + '" style="--col-color:' + col.color + '">' +
+    '<div class="kanban-column-header">' +
+      '<div class="kanban-column-dot"></div>' +
+      '<div class="kanban-column-title">' + col.titulo + '</div>' +
+      '<div class="kanban-column-count">' + cards.length + '</div>' +
+      '<button class="kanban-column-iconbtn" onclick="openEditColumnaModal(' + col.id + ')" title="Editar columna">✏️</button>' +
+      '<button class="kanban-column-iconbtn danger" onclick="eliminarColumna(' + col.id + ')" title="Eliminar columna">🗑️</button>' +
+      '<button class="kanban-column-addbtn" onclick="nuevaTarjeta(' + col.id + ')" title="Añadir tarjeta">+</button>' +
+    '</div>' +
+    '<div class="kanban-column-body" data-columna-id="' + col.id + '" ondragover="kanbanDragOver(event)" ondragleave="kanbanDragLeave(event)" ondrop="kanbanDrop(event,' + col.id + ')">' +
+      cardsHtml +
+    '</div>' +
+  '</div>';
+}
+
 function renderKanbanBoard() {
   var totalTarjetas = kanbanTarjetas.length;
   document.getElementById('count-kanban-tarjetas').textContent = totalTarjetas + ' tarjeta' + (totalTarjetas !== 1 ? 's' : '');
-  var html = kanbanColumnas.map(function(col) {
-    var cards = kanbanTarjetas.filter(function(t) { return t.columna_id === col.id; }).sort(function(a, b) { return (a.orden || 0) - (b.orden || 0); });
-    var cardsHtml = cards.map(renderKanbanCard).join('');
-    return '<div class="kanban-column" style="--col-color:' + col.color + '">' +
-      '<div class="kanban-column-header">' +
-        '<div class="kanban-column-dot"></div>' +
-        '<div class="kanban-column-title">' + col.titulo + '</div>' +
-        '<div class="kanban-column-count">' + cards.length + '</div>' +
-        '<button class="kanban-column-iconbtn" onclick="openEditColumnaModal(' + col.id + ')" title="Editar columna">✏️</button>' +
-        '<button class="kanban-column-iconbtn danger" onclick="eliminarColumna(' + col.id + ')" title="Eliminar columna">🗑️</button>' +
-        '<button class="kanban-column-addbtn" onclick="nuevaTarjeta(' + col.id + ')" title="Añadir tarjeta">+</button>' +
-      '</div>' +
-      '<div class="kanban-column-body" data-columna-id="' + col.id + '" ondragover="kanbanDragOver(event)" ondragleave="kanbanDragLeave(event)" ondrop="kanbanDrop(event,' + col.id + ')">' +
-        cardsHtml +
-      '</div>' +
-    '</div>';
-  }).join('');
-  document.getElementById('kanban-board').innerHTML = html;
+  document.getElementById('kanban-board').innerHTML = kanbanColumnas.map(kanbanColumnHtml).join('');
+}
+
+// Re-renderiza solo una columna (evita el parpadeo de recargar todo el tablero)
+function renderKanbanColumn(columnaId) {
+  var totalTarjetas = kanbanTarjetas.length;
+  document.getElementById('count-kanban-tarjetas').textContent = totalTarjetas + ' tarjeta' + (totalTarjetas !== 1 ? 's' : '');
+  var col = kanbanColumnas.find(function(c) { return c.id === columnaId; });
+  if (!col) return;
+  var el = document.getElementById('kanban-column-' + columnaId);
+  if (!el) { renderKanbanBoard(); return; }
+  el.outerHTML = kanbanColumnHtml(col);
 }
 
 function renderKanbanCard(t) {
   var banco = bancosData.find(function(b) { return b.id === t.banco_id; });
-  var labelsHtml = (t.etiquetas || []).map(function(eid) {
+  var etiquetas = t.etiquetas || [];
+  var visibles = etiquetas.slice(0, 3);
+  var restantes = etiquetas.length - visibles.length;
+  var labelsHtml = visibles.map(function(eid) {
     var et = kanbanEtiquetas.find(function(e) { return e.id === eid; });
     if (!et) return '';
     return '<span class="kanban-label-chip" style="background:' + et.color + '">' + et.nombre + '</span>';
-  }).join('');
+  }).join('') + (restantes > 0 ? '<span class="kanban-label-chip-more">+' + restantes + ' más</span>' : '');
+
+  var metaParts = [];
+  if (t.responsable) metaParts.push('👤 ' + t.responsable);
+  if (t.fecha_inicio) metaParts.push('📅 ' + formatDate(t.fecha_inicio));
+  var metaHtml = metaParts.length ? '<div class="kanban-card-meta-row">' + metaParts.join(' <span class="kanban-card-meta-sep">·</span> ') + '</div>' : '';
+
   return '<div class="kanban-card" draggable="true" data-tarjeta-id="' + t.id + '" ondragstart="kanbanDragStart(event,' + t.id + ')" ondragend="kanbanDragEnd(event)" onclick="abrirTarjetaDrawer(' + t.id + ')">' +
     '<div class="kanban-card-title">' + t.titulo + '</div>' +
-    (t.responsable ? '<div class="kanban-card-meta">👤 ' + t.responsable + '</div>' : '') +
-    (t.fecha_inicio ? '<div class="kanban-card-meta">📅 ' + formatDate(t.fecha_inicio) + '</div>' : '') +
+    metaHtml +
     (banco ? '<div class="kanban-card-banco">🏭 ' + banco.nombre + '</div>' : '') +
     (labelsHtml ? '<div class="kanban-card-labels">' + labelsHtml + '</div>' : '') +
   '</div>';
@@ -2684,11 +2709,23 @@ function kanbanDrop(e, columnaId) {
   var cardId = kanbanDragCardId;
   kanbanDragCardId = null;
   if (cardId == null) return;
+  var t = kanbanTarjetas.find(function(x) { return x.id === cardId; });
+  if (!t) return;
   var orderedIds = Array.prototype.slice.call(body.querySelectorAll('.kanban-card')).map(function(el) { return parseInt(el.getAttribute('data-tarjeta-id'), 10); });
   var orden = orderedIds.indexOf(cardId);
-  kanbanPost('move-kanban-tarjeta', { id: cardId, columna_id: columnaId, orden: orden }, function() {
-    loadKanban();
-  }, function() {
+
+  var backupColumnaId = t.columna_id;
+  var backupOrden = t.orden;
+  t.columna_id = columnaId;
+  orderedIds.forEach(function(id, idx) {
+    var card = kanbanTarjetas.find(function(x) { return x.id === id; });
+    if (card) card.orden = idx;
+  });
+  renderKanbanBoard();
+
+  kanbanPost('move-kanban-tarjeta', { id: cardId, columna_id: columnaId, orden: orden }, function() {}, function() {
+    t.columna_id = backupColumnaId;
+    t.orden = backupOrden;
     renderKanbanBoard();
   });
 }
@@ -2837,23 +2874,69 @@ function guardarCambiosTarjeta() {
       banco_id: bancoId
     };
     var etiquetasElegidas = draft.etiquetas.slice();
+    var tempId = kanbanNextTempId();
+    var ordenNueva = kanbanTarjetas.filter(function(t) { return t.columna_id === draft.columna_id; }).length;
+    var nuevaTarjetaObj = {
+      id: tempId,
+      columna_id: draft.columna_id,
+      titulo: draft.titulo,
+      responsable: draft.responsable,
+      fecha_inicio: draft.fecha_inicio,
+      tipo_producto: draft.tipo_producto,
+      descripcion: draft.descripcion,
+      banco_id: bancoId,
+      orden: ordenNueva,
+      etiquetas: etiquetasElegidas.slice()
+    };
+    kanbanTarjetas.push(nuevaTarjetaObj);
+    closeTarjetaDrawer();
+    renderKanbanColumn(draft.columna_id);
+
     kanbanPost('add-kanban-tarjeta', payload, function(d) {
       showToast((d && d.message) || 'Tarjeta creada');
-      closeTarjetaDrawer();
       var nuevoId = d && d.id != null ? d.id : null;
-      if (nuevoId != null && etiquetasElegidas.length) {
-        sincronizarEtiquetasTarjeta(nuevoId, [], etiquetasElegidas, loadKanban);
-      } else {
-        loadKanban();
+      if (nuevoId != null && nuevoId !== nuevaTarjetaObj.id) {
+        nuevaTarjetaObj.id = nuevoId;
+        renderKanbanColumn(draft.columna_id);
       }
+      if (nuevoId != null && etiquetasElegidas.length) {
+        sincronizarEtiquetasTarjeta(nuevoId, [], etiquetasElegidas, function() {});
+      }
+    }, function() {
+      kanbanTarjetas = kanbanTarjetas.filter(function(t) { return t !== nuevaTarjetaObj; });
+      renderKanbanColumn(draft.columna_id);
     });
     return;
   }
 
   var t = kanbanTarjetas.find(function(x) { return x.id === kanbanTarjetaActualId; });
   if (!t) return;
-  var etiquetasAnteriores = (t.etiquetas || []).slice();
+  var backup = {
+    columna_id: t.columna_id,
+    titulo: t.titulo,
+    responsable: t.responsable,
+    fecha_inicio: t.fecha_inicio,
+    tipo_producto: t.tipo_producto,
+    descripcion: t.descripcion,
+    banco_id: t.banco_id,
+    etiquetas: (t.etiquetas || []).slice()
+  };
+  var etiquetasAnteriores = backup.etiquetas.slice();
   var etiquetasNuevas = draft.etiquetas.slice();
+  var columnaAnterior = t.columna_id;
+
+  t.columna_id = draft.columna_id;
+  t.titulo = draft.titulo;
+  t.responsable = draft.responsable;
+  t.fecha_inicio = draft.fecha_inicio;
+  t.tipo_producto = draft.tipo_producto;
+  t.descripcion = draft.descripcion;
+  t.banco_id = bancoId;
+  t.etiquetas = etiquetasNuevas;
+
+  closeTarjetaDrawer();
+  renderKanbanColumn(columnaAnterior);
+  if (draft.columna_id !== columnaAnterior) renderKanbanColumn(draft.columna_id);
 
   kanbanPost('edit-kanban-tarjeta', {
     id: t.id,
@@ -2866,8 +2949,18 @@ function guardarCambiosTarjeta() {
     banco_id: bancoId
   }, function(d) {
     showToast((d && d.message) || 'Cambios guardados');
-    closeTarjetaDrawer();
-    sincronizarEtiquetasTarjeta(t.id, etiquetasAnteriores, etiquetasNuevas, loadKanban);
+    sincronizarEtiquetasTarjeta(t.id, etiquetasAnteriores, etiquetasNuevas, function() {});
+  }, function() {
+    t.columna_id = backup.columna_id;
+    t.titulo = backup.titulo;
+    t.responsable = backup.responsable;
+    t.fecha_inicio = backup.fecha_inicio;
+    t.tipo_producto = backup.tipo_producto;
+    t.descripcion = backup.descripcion;
+    t.banco_id = backup.banco_id;
+    t.etiquetas = backup.etiquetas;
+    renderKanbanColumn(draft.columna_id);
+    if (draft.columna_id !== columnaAnterior) renderKanbanColumn(columnaAnterior);
   });
 }
 
@@ -2875,10 +2968,19 @@ function eliminarTarjetaActual() {
   if (kanbanTarjetaActualId == null) return;
   var id = kanbanTarjetaActualId;
   openConfirmModal('🗑️ Eliminar tarjeta', 'Esta acción no se puede deshacer.', function() {
+    var idx = kanbanTarjetas.findIndex(function(x) { return x.id === id; });
+    if (idx === -1) return;
+    var backup = kanbanTarjetas[idx];
+    var columnaId = backup.columna_id;
+    kanbanTarjetas.splice(idx, 1);
+    closeTarjetaDrawer();
+    renderKanbanColumn(columnaId);
+
     kanbanPost('delete-kanban-tarjeta', { id: id }, function(d) {
       showToast((d && d.message) || 'Tarjeta eliminada');
-      closeTarjetaDrawer();
-      loadKanban();
+    }, function() {
+      kanbanTarjetas.splice(idx, 0, backup);
+      renderKanbanColumn(columnaId);
     });
   });
 }
@@ -2921,26 +3023,60 @@ function submitKanbanColumna() {
   if (!titulo) { showToast('El título es obligatorio'); return; }
   if (kanbanEditColumnaId) {
     var id = kanbanEditColumnaId;
+    var col = kanbanColumnas.find(function(c) { return c.id === id; });
+    if (!col) return;
+    var backup = { titulo: col.titulo, color: col.color };
+    col.titulo = titulo;
+    col.color = color;
+    closeModal('kanban-columna');
+    renderKanbanBoard();
+
     kanbanPost('edit-kanban-columna', { id: id, titulo: titulo, color: color }, function(d) {
       showToast((d && d.message) || 'Columna actualizada');
-      closeModal('kanban-columna');
-      loadKanban();
+    }, function() {
+      col.titulo = backup.titulo;
+      col.color = backup.color;
+      renderKanbanBoard();
     });
   } else {
     var orden = kanbanColumnas.length + 1;
+    var tempId = kanbanNextTempId();
+    var nuevaCol = { id: tempId, titulo: titulo, color: color, orden: orden };
+    kanbanColumnas.push(nuevaCol);
+    closeModal('kanban-columna');
+    renderKanbanBoard();
+
     kanbanPost('add-kanban-columna', { titulo: titulo, color: color, orden: orden }, function(d) {
       showToast((d && d.message) || 'Columna creada');
-      closeModal('kanban-columna');
-      loadKanban();
+      var oldId = nuevaCol.id;
+      if (d && d.id != null && d.id !== oldId) {
+        nuevaCol.id = d.id;
+        kanbanTarjetas.forEach(function(t) { if (t.columna_id === oldId) t.columna_id = d.id; });
+        renderKanbanBoard();
+      }
+    }, function() {
+      kanbanColumnas = kanbanColumnas.filter(function(c) { return c !== nuevaCol; });
+      renderKanbanBoard();
     });
   }
 }
 
 function eliminarColumna(id) {
   openConfirmModal('🗑️ Eliminar columna', 'Se eliminará esta columna y todas sus tarjetas. Esta acción no se puede deshacer.', function() {
+    var colIdx = kanbanColumnas.findIndex(function(c) { return c.id === id; });
+    if (colIdx === -1) return;
+    var colBackup = kanbanColumnas[colIdx];
+    var cardsBackup = kanbanTarjetas.filter(function(t) { return t.columna_id === id; });
+    kanbanColumnas.splice(colIdx, 1);
+    kanbanTarjetas = kanbanTarjetas.filter(function(t) { return t.columna_id !== id; });
+    renderKanbanBoard();
+
     kanbanPost('delete-kanban-columna', { id: id }, function(d) {
       showToast((d && d.message) || 'Columna eliminada');
-      loadKanban();
+    }, function() {
+      kanbanColumnas.splice(colIdx, 0, colBackup);
+      kanbanTarjetas = kanbanTarjetas.concat(cardsBackup);
+      renderKanbanBoard();
     });
   });
 }
