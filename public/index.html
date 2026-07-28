@@ -4021,8 +4021,34 @@ function checkCumpleanos() {
   if (cambios) setNoticias(noticias);
 }
 
+function desanclarPreCumpleanosDelDia() {
+  var noticias = getNoticias();
+  var personas = getPersonasCumple();
+  var hoy = new Date();
+  var hoyMes = hoy.getMonth() + 1;
+  var hoyDia = hoy.getDate();
+  var cambios = false;
+
+  noticias.forEach(function(n) {
+    if (n.tipo !== 'cumpleanos' || n.subtipo_cumpleanos !== 'pre') return;
+    var persona = personas.find(function(p) { return p.nombre === n.persona_cumpleanos; });
+    if (!persona) return;
+    if (persona.mes === hoyMes && persona.dia === hoyDia) {
+      if (n.anclado !== false || n.dias_anclado !== 0 || n.fecha_ancla_expira !== null) {
+        n.anclado = false;
+        n.dias_anclado = 0;
+        n.fecha_ancla_expira = null;
+        cambios = true;
+      }
+    }
+  });
+
+  if (cambios) setNoticias(noticias);
+}
+
 function initNoticias() {
   checkCumpleanos();
+  desanclarPreCumpleanosDelDia();
 }
 
 loadAll();
