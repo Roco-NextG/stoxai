@@ -354,6 +354,92 @@
   .color-swatch-row{display:flex;gap:8px;flex-wrap:wrap;}
   .color-swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;box-shadow:0 0 0 1px var(--sandgrau);}
   .color-swatch.selected{border-color:var(--white);box-shadow:0 0 0 2px var(--geze-blau);}
+
+  /* ===== NOTICIAS / BLOG ===== */
+  .noticias-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+  .noticias-search{flex:1;min-width:180px;}
+  .noticias-toolbar select.form-input{width:auto;min-width:150px;}
+  .vista-noticias-editor,.vista-noticias-detail{display:none;}
+
+  .noticias-masonry{column-count:3;column-gap:16px;}
+  @media (max-width:1100px){.noticias-masonry{column-count:2;}}
+  @media (max-width:640px){.noticias-masonry{column-count:1;}}
+  .noticia-card{break-inside:avoid;margin-bottom:16px;background:var(--white);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,35,100,0.08);cursor:pointer;position:relative;transition:transform 150ms ease-out,box-shadow 150ms ease-out;display:inline-block;width:100%;vertical-align:top;}
+  .noticia-card:hover{transform:scale(1.01);box-shadow:0 10px 28px rgba(0,35,100,0.16);}
+  .noticia-card-cover{width:100%;display:block;height:auto;object-fit:cover;border-radius:12px 12px 0 0;}
+  .noticia-card-cover-placeholder{width:100%;aspect-ratio:16/10;display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--geze-blau),var(--akzent-blau));border-radius:12px 12px 0 0;}
+  .noticia-card-badges{position:absolute;top:10px;right:10px;display:flex;gap:5px;z-index:2;}
+  .noticia-badge-chip{background:rgba(0,35,100,0.65);color:#fff;font-size:12px;line-height:1;padding:5px 6px;border-radius:20px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px);box-shadow:0 1px 4px rgba(0,0,0,0.2);}
+  .noticia-badge-pin{background:var(--geze-gelb);color:var(--geze-blau);}
+  .noticia-card-body{padding:12px;}
+  .noticia-card-title{font-size:14px;font-weight:600;color:var(--geze-blau);margin-bottom:6px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+  .noticia-card-resumen{font-size:12px;line-height:1.45;color:var(--sec-2);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:10px;}
+  .noticia-card-footer{font-size:11px;color:var(--sec-1);display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+  .noticia-card-footer .sep{color:var(--sandgrau-dunkel);}
+  .noticia-card-cat{background:var(--sandgrau-hell);color:var(--sec-2);padding:2px 8px;border-radius:10px;font-weight:500;}
+  .noticias-empty{column-span:all;break-inside:avoid;padding:60px 20px;text-align:center;color:var(--sec-1);font-size:13px;}
+
+  /* Editor */
+  .noticia-editor-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin-bottom:14px;}
+  @media (max-width:900px){.noticia-editor-grid{grid-template-columns:1fr;}}
+  .noticia-editor-split{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
+  @media (max-width:900px){.noticia-editor-split{grid-template-columns:1fr;}}
+  .noticia-editor-col-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--sec-2);margin-bottom:8px;}
+  .noticia-rte-toolbar{display:flex;flex-wrap:wrap;gap:4px;padding:8px;background:var(--sandgrau-hell);border:0.5px solid var(--sandgrau-dunkel);border-bottom:none;border-radius:8px 8px 0 0;align-items:center;}
+  .noticia-rte-toolbar button{background:var(--white);border:0.5px solid var(--sandgrau-dunkel);border-radius:4px;font-size:12px;padding:5px 8px;cursor:pointer;font-family:'Inter',sans-serif;color:var(--geze-blau);line-height:1;}
+  .noticia-rte-toolbar button:hover{border-color:var(--akzent-blau);color:var(--akzent-blau);}
+  .noticia-rte-toolbar select,.noticia-rte-toolbar input[type="color"]{border:0.5px solid var(--sandgrau-dunkel);border-radius:4px;font-size:12px;font-family:'Inter',sans-serif;height:27px;cursor:pointer;}
+  .noticia-rte-toolbar input[type="color"]{width:30px;padding:1px;}
+  .noticia-rte-sep{width:1px;height:20px;background:var(--sandgrau-dunkel);margin:0 2px;}
+  .noticia-rte-content{min-height:340px;max-height:520px;overflow-y:auto;border:0.5px solid var(--sandgrau-dunkel);border-radius:0 0 8px 8px;padding:14px;font-size:13px;line-height:1.55;outline:none;color:var(--geze-blau);}
+  .noticia-rte-content:empty:before{content:attr(data-placeholder);color:var(--sec-1);}
+  .noticia-preview-box{border:0.5px solid var(--sandgrau);border-radius:8px;padding:18px;background:var(--white);min-height:394px;max-height:520px;overflow-y:auto;font-size:13px;line-height:1.55;}
+  .noticia-preview-title{font-size:18px;font-weight:600;color:var(--geze-blau);margin-bottom:10px;}
+  .noticia-preview-meta{font-size:11px;color:var(--sec-1);margin-bottom:14px;}
+  .noticia-editor-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
+  .noticia-imgpick-row{display:flex;gap:8px;align-items:center;}
+  .noticia-imgpick-preview{width:44px;height:44px;border-radius:6px;object-fit:cover;border:0.5px solid var(--sandgrau);display:none;}
+
+  /* Detalle */
+  .noticia-detail-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:8px;flex-wrap:wrap;}
+  .noticia-detail-cover{position:relative;border-radius:12px;overflow:hidden;height:280px;margin-bottom:22px;background:linear-gradient(135deg,var(--geze-blau),var(--akzent-blau));}
+  .noticia-detail-cover img{width:100%;height:100%;object-fit:cover;display:block;}
+  .noticia-detail-cover-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,35,100,0) 35%,rgba(0,20,60,0.82) 100%);display:flex;align-items:flex-end;padding:24px;}
+  .noticia-detail-cover-title{color:#fff;font-size:26px;font-weight:600;line-height:1.25;max-width:900px;}
+  .noticia-detail-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--sec-2);margin-bottom:20px;}
+  .noticia-detail-body{font-size:14px;line-height:1.7;color:var(--geze-blau);max-width:900px;}
+  .noticia-detail-body img{max-width:100%;border-radius:8px;}
+
+  /* Config modal */
+  .noticia-config-section{padding-bottom:18px;margin-bottom:18px;border-bottom:0.5px solid var(--sandgrau);}
+  .noticia-config-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+  .noticia-config-section-title{font-size:12px;font-weight:700;color:var(--geze-blau);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+  .noticia-topic-chip{display:inline-flex;align-items:center;gap:6px;background:var(--sandgrau-hell);border:0.5px solid var(--sandgrau);color:var(--geze-blau);font-size:12px;padding:4px 6px 4px 10px;border-radius:14px;}
+  .noticia-topic-chip button{background:none;border:none;color:var(--sec-2);cursor:pointer;font-size:12px;padding:0 2px;}
+  .noticia-topic-chip button:hover{color:var(--danger);}
+  .noticia-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .noticia-switch{position:relative;width:38px;height:21px;flex-shrink:0;}
+  .noticia-switch input{opacity:0;width:0;height:0;}
+  .noticia-switch-track{position:absolute;inset:0;background:var(--sandgrau-dunkel);border-radius:12px;cursor:pointer;transition:background 150ms;}
+  .noticia-switch-track:before{content:'';position:absolute;width:15px;height:15px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform 150ms;}
+  .noticia-switch input:checked + .noticia-switch-track{background:var(--success);}
+  .noticia-switch input:checked + .noticia-switch-track:before{transform:translateX(17px);}
+  .noticia-persona-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--sandgrau-hell);}
+  .noticia-persona-row:last-child{border-bottom:none;}
+  .noticia-persona-name{flex:1;font-size:13px;color:var(--geze-blau);}
+  .noticia-persona-date{font-size:12px;color:var(--sec-2);}
+  .noticia-idiomas-row{display:flex;gap:16px;font-size:12px;color:var(--geze-blau);}
+  .noticia-idiomas-row label{display:flex;align-items:center;gap:5px;cursor:pointer;}
+
+  /* SVG cumpleaños */
+  .noticia-bday-svg-wrap{width:100%;aspect-ratio:16/10;border-radius:12px 12px 0 0;overflow:hidden;}
+  .noticia-bday-svg-wrap svg{width:100%;height:100%;display:block;}
+  @keyframes noticiaGloboSube{0%{transform:translateY(0);}50%{transform:translateY(-14px);}100%{transform:translateY(0);}}
+  @keyframes noticiaGloboSubeFuerte{0%{transform:translateY(0);}50%{transform:translateY(-24px);}100%{transform:translateY(0);}}
+  @keyframes noticiaEstrellaParpadea{0%,100%{opacity:0.25;}50%{opacity:1;}}
+  @keyframes noticiaConfetiCae{0%{transform:translateY(-10px) rotate(0deg);opacity:1;}100%{transform:translateY(120px) rotate(360deg);opacity:0;}}
+  @keyframes noticiaTextoBounce{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+  @keyframes noticiaLlamaParpadea{0%,100%{opacity:0.7;transform:scaleY(1);}50%{opacity:1;transform:scaleY(1.15);}}
 </style>
 </head>
 <body>
@@ -405,6 +491,10 @@
       <div class="sidepanel-item" id="tab-benchmarking" onclick="showPanel('benchmarking')">
         <span class="sidepanel-item-initial">A</span>
         <span class="sidepanel-item-label">Benchmarking Activities</span>
+      </div>
+      <div class="sidepanel-item" id="tab-noticias" onclick="showPanel('noticias')">
+        <span class="sidepanel-item-initial">N</span>
+        <span class="sidepanel-item-label">Noticias</span>
       </div>
     </nav>
   </aside>
@@ -692,6 +782,128 @@
     <div class="kanban-board" id="kanban-board">
       <div class="loading-row" style="padding:40px;">Cargando tablero...</div>
     </div>
+  </div>
+
+  <!-- NOTICIAS / BLOG PANEL -->
+  <div class="panel-section" id="panel-noticias">
+
+    <!-- Vista 1: Feed -->
+    <div id="vista-noticias-feed">
+      <div class="section-header">
+        <div class="section-title-group">
+          <div class="frame-accent"><div class="fl"></div><div class="fl"></div></div>
+          <span class="section-title">Noticias</span>
+          <span class="section-count" id="count-noticias">0 noticias</span>
+        </div>
+        <div class="section-actions">
+          <button class="btn-secondary" onclick="openNoticiaConfigModal()">⚙️ Configuración</button>
+          <button class="btn-primary" onclick="abrirEditorNoticia()">+ Nueva noticia</button>
+        </div>
+      </div>
+      <div class="noticias-toolbar">
+        <input class="form-input noticias-search" id="not-search" type="text" placeholder="Buscar por título o contenido..." oninput="renderNoticiasFeed()">
+        <select class="form-input" id="not-filter-categoria" onchange="renderNoticiasFeed()">
+          <option value="">Todas las categorías</option>
+        </select>
+        <select class="form-input" id="not-filter-tipo" onchange="renderNoticiasFeed()">
+          <option value="">Todos los tipos</option>
+          <option value="manual">Manual</option>
+          <option value="automatica">Automática</option>
+          <option value="cumpleanos">Cumpleaños</option>
+        </select>
+      </div>
+      <div class="noticias-masonry" id="noticias-masonry">
+        <div class="noticias-empty">Cargando noticias...</div>
+      </div>
+    </div>
+
+    <!-- Vista 2: Editor -->
+    <div id="vista-noticias-editor" class="vista-noticias-editor">
+      <div class="noticia-detail-top">
+        <button class="banco-back-btn" onclick="cerrarEditorNoticia()">← Volver al listado</button>
+        <span style="font-size:16px;font-weight:600;color:var(--geze-blau);" id="not-editor-title">Nueva noticia</span>
+        <div></div>
+      </div>
+      <input type="hidden" id="not-editor-id" value="">
+      <div class="noticia-editor-grid">
+        <div class="form-group"><label class="form-label">Título <span style="color:var(--danger);">*</span></label><input class="form-input" id="not-titulo" placeholder="Título de la noticia" oninput="actualizarPreviewNoticia()"></div>
+        <div class="form-group"><label class="form-label">Autor</label><input class="form-input" id="not-autor" placeholder="ej: Rommel" oninput="actualizarPreviewNoticia()"></div>
+        <div class="form-group"><label class="form-label">Categoría</label><input class="form-input" id="not-categoria" placeholder="ej: Laboratorio, Equipo, General..." oninput="actualizarPreviewNoticia()"></div>
+        <div class="form-group"><label class="form-label">Días anclado en el feed</label><input class="form-input" id="not-dias-anclado" type="number" min="0" value="0"></div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">Imagen de portada (URL o subir archivo)</label>
+          <div class="noticia-imgpick-row">
+            <input class="form-input" style="flex:1;" id="not-imagen" placeholder="https://... (opcional, o sube un archivo)" oninput="actualizarPreviewPortada()">
+            <button class="btn-secondary" onclick="document.getElementById('not-imagen-file').click()">📷 Subir</button>
+            <img class="noticia-imgpick-preview" id="not-imagen-preview" alt="preview">
+          </div>
+          <input type="file" id="not-imagen-file" accept="image/*" style="display:none" onchange="uploadImagenPortada(event)">
+        </div>
+      </div>
+      <div class="noticia-editor-split">
+        <div>
+          <div class="noticia-editor-col-label">Contenido</div>
+          <div class="noticia-rte-toolbar">
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteExec('bold')"><b>N</b></button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteExec('italic')"><i>K</i></button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteExec('underline')"><u>S</u></button>
+            <div class="noticia-rte-sep"></div>
+            <select onmousedown="event.preventDefault()" onchange="rteFontSize(this.value)">
+              <option value="2">Pequeño</option>
+              <option value="3" selected>Normal</option>
+              <option value="5">Grande</option>
+              <option value="7">Título</option>
+            </select>
+            <input type="color" title="Color de texto" onmousedown="event.preventDefault()" onchange="rteExec('foreColor', this.value)" value="#002364">
+            <div class="noticia-rte-sep"></div>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteExec('justifyLeft')">⯇</button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteExec('justifyCenter')">☰</button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteExec('justifyRight')">⯈</button>
+            <div class="noticia-rte-sep"></div>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteExec('insertUnorderedList')">• Lista</button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteExec('insertOrderedList')">1. Lista</button>
+            <div class="noticia-rte-sep"></div>
+            <button type="button" onmousedown="event.preventDefault()" onclick="rteInsertLink()">🔗 Enlace</button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="document.getElementById('not-content-image-file').click()">🖼️ Imagen</button>
+            <button type="button" onmousedown="rteSaveSelection()" onclick="abrirInsertarHtmlModal()">&lt;/&gt; HTML</button>
+            <input type="file" id="not-content-image-file" accept="image/*" style="display:none" onchange="rteInsertImageFile(event)">
+          </div>
+          <div class="noticia-rte-content" id="not-rte" contenteditable="true" data-placeholder="Escribe el contenido de la noticia..." oninput="actualizarPreviewNoticia()" onmouseup="rteSaveSelection()" onkeyup="rteSaveSelection()"></div>
+        </div>
+        <div>
+          <div class="noticia-editor-col-label">Vista previa</div>
+          <div class="noticia-preview-box" id="not-preview">
+            <div class="noticia-preview-title" id="not-preview-title">Título de la noticia</div>
+            <div class="noticia-preview-meta" id="not-preview-meta">Autor · Fecha · Categoría</div>
+            <div id="not-preview-body"></div>
+          </div>
+        </div>
+      </div>
+      <div class="noticia-editor-actions">
+        <button class="btn-secondary" onclick="cerrarEditorNoticia()">Cancelar</button>
+        <button class="btn-secondary" onclick="guardarNoticia('borrador')">Guardar borrador</button>
+        <button class="btn-primary" onclick="guardarNoticia('publicado')">Publicar</button>
+      </div>
+    </div>
+
+    <!-- Vista 3: Detalle -->
+    <div id="vista-noticias-detail" class="vista-noticias-detail">
+      <div class="noticia-detail-top">
+        <button class="banco-back-btn" onclick="volverAFeedNoticias()">← Volver al listado</button>
+        <div style="display:flex;gap:6px;">
+          <button class="btn-edit-sm" onclick="editarNoticiaActual()">Editar</button>
+          <button class="btn-danger-sm" onclick="eliminarNoticiaActual()">Eliminar</button>
+        </div>
+      </div>
+      <div class="noticia-detail-cover" id="not-detail-cover">
+        <div class="noticia-detail-cover-overlay">
+          <div class="noticia-detail-cover-title" id="not-detail-titulo">—</div>
+        </div>
+      </div>
+      <div class="noticia-detail-meta" id="not-detail-meta"></div>
+      <div class="noticia-detail-body" id="not-detail-body"></div>
+    </div>
+
   </div>
 
 </main>
@@ -1121,6 +1333,10 @@ function showPanel(name) {
   }
   if (name === 'benchmarking') {
     loadKanban();
+  }
+  if (name === 'noticias') {
+    volverAFeedNoticias();
+    renderNoticiasFeed();
   }
 }
 
@@ -3122,8 +3338,630 @@ function eliminarEtiqueta(id) {
   });
 }
 
+// ===== NOTICIAS / BLOG =====
+var NOTICIAS_KEY = 'glab_noticias';
+var NOTICIAS_CONFIG_KEY = 'glab_noticias_config';
+var NOTICIAS_PERSONAS_KEY = 'glab_noticias_personas';
+
+var noticiasConfigDefault = {
+  agente_activo: false,
+  topicos: [],
+  frecuencia_horas: 24,
+  max_por_ciclo: 3,
+  idiomas: ['es'],
+  traducir_auto: true,
+  cumple_activo: true,
+  dias_anclaje_default: 0,
+  columnas_masonry: 3,
+  mostrar_badges: true
+};
+
+var mensajesCumplePre = [
+  'Ya casi llega tu gran día — ¡prepárate para celebrarlo como se merece!',
+  'La cuenta atrás ha comenzado. ¡Que se acerque la fiesta!',
+  'Se nota la ilusión en el ambiente... ¡tu cumpleaños está a la vuelta de la esquina!',
+  'Pronto será tu día especial. Todo el equipo ya lo tiene marcado en el calendario.',
+  'Faltan pocos días para brindar por ti. ¡Que la espera valga la pena!',
+  'El laboratorio se prepara para celebrar contigo muy pronto. ¡Se acerca tu día!'
+];
+var mensajesCumpleDia = [
+  '¡Que tengas un día increíble, rodeado de las personas que más quieres!',
+  'Hoy es tu día — ¡que se cumplan todos tus deseos!',
+  'Todo el equipo de GEZE I+D te desea un cumpleaños lleno de alegría.',
+  'Que este nuevo año esté lleno de éxitos, salud y buenos momentos.',
+  '¡A celebrar por todo lo alto! Feliz cumpleaños de parte de todo el laboratorio.',
+  'Un año más, una razón más para celebrar. ¡Feliz cumpleaños!'
+];
+
+var noticiasIdCounter = 0;
+function generarIdNoticia() {
+  var id = Date.now() + noticiasIdCounter;
+  noticiasIdCounter++;
+  return id;
+}
+
+function getNoticias() {
+  try { return JSON.parse(localStorage.getItem(NOTICIAS_KEY)) || []; } catch (e) { return []; }
+}
+function setNoticias(list) {
+  localStorage.setItem(NOTICIAS_KEY, JSON.stringify(list));
+}
+function getNoticiasConfig() {
+  var stored = null;
+  try { stored = JSON.parse(localStorage.getItem(NOTICIAS_CONFIG_KEY)); } catch (e) {}
+  var cfg = {};
+  for (var k in noticiasConfigDefault) cfg[k] = noticiasConfigDefault[k];
+  if (stored) for (var k2 in stored) cfg[k2] = stored[k2];
+  return cfg;
+}
+function setNoticiasConfig(cfg) {
+  localStorage.setItem(NOTICIAS_CONFIG_KEY, JSON.stringify(cfg));
+}
+function getPersonasCumple() {
+  try { return JSON.parse(localStorage.getItem(NOTICIAS_PERSONAS_KEY)) || []; } catch (e) { return []; }
+}
+function setPersonasCumple(list) {
+  localStorage.setItem(NOTICIAS_PERSONAS_KEY, JSON.stringify(list));
+}
+
+function calcularAnclado(post) {
+  if (!post.fecha_ancla_expira) return false;
+  return new Date() < new Date(post.fecha_ancla_expira);
+}
+
+function stripHtmlNoticia(html) {
+  var div = document.createElement('div');
+  div.innerHTML = html || '';
+  return (div.textContent || div.innerText || '').replace(/\s+/g, ' ').trim();
+}
+
+function mostrarVistaNoticias(vista) {
+  document.getElementById('vista-noticias-feed').style.display = vista === 'feed' ? '' : 'none';
+  document.getElementById('vista-noticias-editor').style.display = vista === 'editor' ? 'block' : 'none';
+  document.getElementById('vista-noticias-detail').style.display = vista === 'detail' ? 'block' : 'none';
+}
+
+// ----- Feed -----
+function renderNoticiasFeed() {
+  if (!document.getElementById('noticias-masonry')) return;
+  var posts = getNoticias().map(function(p) {
+    p.anclado = calcularAnclado(p);
+    return p;
+  }).filter(function(p) { return p.estado === 'publicado'; });
+
+  var catSelect = document.getElementById('not-filter-categoria');
+  var catActual = catSelect.value;
+  var categorias = posts.map(function(p) { return p.categoria; }).filter(Boolean).reduce(function(acc, c) {
+    if (acc.indexOf(c) === -1) acc.push(c);
+    return acc;
+  }, []).sort();
+  catSelect.innerHTML = '<option value="">Todas las categorías</option>' + categorias.map(function(c) {
+    return '<option value="' + c.replace(/"/g, '&quot;') + '"' + (c === catActual ? ' selected' : '') + '>' + c + '</option>';
+  }).join('');
+
+  var q = (document.getElementById('not-search').value || '').toLowerCase().trim();
+  var filtroCategoria = catSelect.value;
+  var filtroTipo = document.getElementById('not-filter-tipo').value;
+
+  var filtrados = posts.filter(function(p) {
+    if (filtroCategoria && p.categoria !== filtroCategoria) return false;
+    if (filtroTipo && p.tipo !== filtroTipo) return false;
+    if (q) {
+      var haystack = (p.titulo + ' ' + stripHtmlNoticia(p.contenido_html)).toLowerCase();
+      if (haystack.indexOf(q) === -1) return false;
+    }
+    return true;
+  });
+
+  filtrados.sort(function(a, b) {
+    if (a.anclado && !b.anclado) return -1;
+    if (!a.anclado && b.anclado) return 1;
+    return new Date(b.fecha_creacion) - new Date(a.fecha_creacion);
+  });
+
+  document.getElementById('count-noticias').textContent = filtrados.length + (filtrados.length === 1 ? ' noticia' : ' noticias');
+
+  var cfg = getNoticiasConfig();
+  document.getElementById('noticias-masonry').style.columnCount = cfg.columnas_masonry;
+
+  var html = filtrados.map(function(p) { return renderNoticiaCard(p, cfg); }).join('');
+  document.getElementById('noticias-masonry').innerHTML = html || '<div class="noticias-empty">No hay noticias que coincidan con la búsqueda.</div>';
+}
+
+function renderNoticiaCard(p, cfg) {
+  cfg = cfg || getNoticiasConfig();
+  var cover;
+  if (p.imagen_portada) {
+    if (/^\s*<svg/i.test(p.imagen_portada)) {
+      cover = '<div class="noticia-bday-svg-wrap">' + p.imagen_portada + '</div>';
+    } else {
+      cover = '<img class="noticia-card-cover" src="' + p.imagen_portada + '" alt="">';
+    }
+  } else {
+    var inicial = (p.titulo || '?').trim().charAt(0).toUpperCase();
+    cover = '<div class="noticia-card-cover-placeholder">' + inicial + '</div>';
+  }
+  var badges = '';
+  if (cfg.mostrar_badges) {
+    var chips = '';
+    if (p.anclado) chips += '<span class="noticia-badge-chip noticia-badge-pin" title="Anclado">📌</span>';
+    if (p.tipo === 'cumpleanos') chips += '<span class="noticia-badge-chip" title="Cumpleaños">' + (p.subtipo_cumpleanos === 'dia' ? '🎂' : '🎉') + '</span>';
+    if (p.tipo === 'automatica') chips += '<span class="noticia-badge-chip" title="Noticia automática">🤖</span>';
+    if (chips) badges = '<div class="noticia-card-badges">' + chips + '</div>';
+  }
+  var resumen = p.resumen || stripHtmlNoticia(p.contenido_html).substring(0, 200);
+  var footerParts = [];
+  if (p.autor) footerParts.push(p.autor);
+  footerParts.push(formatDate(p.fecha_creacion));
+  if (p.categoria) footerParts.push('<span class="noticia-card-cat">' + p.categoria + '</span>');
+  var footer = footerParts.join(' <span class="sep">·</span> ');
+
+  return '<div class="noticia-card" onclick="verNoticia(' + p.id + ')">' +
+    badges + cover +
+    '<div class="noticia-card-body">' +
+      '<div class="noticia-card-title">' + (p.titulo || '') + '</div>' +
+      '<div class="noticia-card-resumen">' + resumen + '</div>' +
+      '<div class="noticia-card-footer">' + footer + '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+// ----- Detalle -----
+var noticiaActualId = null;
+
+function volverAFeedNoticias() {
+  noticiaActualId = null;
+  mostrarVistaNoticias('feed');
+}
+
+function verNoticia(id) {
+  noticiaActualId = id;
+  var p = getNoticias().find(function(n) { return n.id === id; });
+  if (!p) return;
+  document.getElementById('not-detail-titulo').textContent = p.titulo;
+  var coverEl = document.getElementById('not-detail-cover');
+  var coverInner = '';
+  if (p.imagen_portada) {
+    coverInner = /^\s*<svg/i.test(p.imagen_portada) ? p.imagen_portada : '<img src="' + p.imagen_portada + '" alt="">';
+  }
+  coverEl.innerHTML = coverInner + '<div class="noticia-detail-cover-overlay"><div class="noticia-detail-cover-title">' + p.titulo + '</div></div>';
+  var tipoLabel = { manual: 'Manual', automatica: 'Automática', cumpleanos: 'Cumpleaños' }[p.tipo] || p.tipo;
+  var metaParts = [];
+  if (p.autor) metaParts.push('👤 ' + p.autor);
+  metaParts.push('📅 ' + formatDate(p.fecha_creacion));
+  if (p.categoria) metaParts.push('🏷️ ' + p.categoria);
+  metaParts.push(tipoLabel);
+  document.getElementById('not-detail-meta').innerHTML = metaParts.join(' <span class="sep">·</span> ');
+  document.getElementById('not-detail-body').innerHTML = p.contenido_html || '';
+  mostrarVistaNoticias('detail');
+}
+
+function editarNoticiaActual() {
+  if (noticiaActualId == null) return;
+  abrirEditorNoticia(noticiaActualId);
+}
+
+function eliminarNoticiaActual() {
+  if (noticiaActualId == null) return;
+  var p = getNoticias().find(function(n) { return n.id === noticiaActualId; });
+  openConfirmModal('🗑️ Eliminar noticia', 'Se eliminará "' + (p ? p.titulo : '') + '" permanentemente.', function() {
+    var list = getNoticias().filter(function(n) { return n.id !== noticiaActualId; });
+    setNoticias(list);
+    showToast('Noticia eliminada');
+    volverAFeedNoticias();
+    renderNoticiasFeed();
+  });
+}
+
+// ----- Editor -----
+var rteSavedRange = null;
+
+function rteExec(cmd, value) {
+  document.getElementById('not-rte').focus();
+  document.execCommand(cmd, false, value);
+  actualizarPreviewNoticia();
+}
+function rteFontSize(size) {
+  rteExec('fontSize', size);
+}
+function rteSaveSelection() {
+  var sel = window.getSelection();
+  if (sel.rangeCount > 0) {
+    var range = sel.getRangeAt(0);
+    var editor = document.getElementById('not-rte');
+    if (editor.contains(range.commonAncestorContainer)) rteSavedRange = range;
+  }
+}
+function rteRestoreSelection() {
+  var editor = document.getElementById('not-rte');
+  editor.focus();
+  if (rteSavedRange) {
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(rteSavedRange);
+  }
+}
+function rteInsertLink() {
+  rteRestoreSelection();
+  var url = window.prompt('URL del enlace:', 'https://');
+  if (!url) return;
+  rteRestoreSelection();
+  document.execCommand('createLink', false, url);
+  actualizarPreviewNoticia();
+}
+function rteInsertImageFile(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  rteRestoreSelection();
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    rteRestoreSelection();
+    document.execCommand('insertImage', false, e.target.result);
+    actualizarPreviewNoticia();
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+function abrirInsertarHtmlModal() {
+  document.getElementById('not-insert-html-textarea').value = '';
+  openModal('noticia-insert-html');
+}
+function insertarHtmlBloque() {
+  var html = document.getElementById('not-insert-html-textarea').value;
+  closeModal('noticia-insert-html');
+  if (!html) return;
+  rteRestoreSelection();
+  document.execCommand('insertHTML', false, html);
+  actualizarPreviewNoticia();
+}
+
+function actualizarPreviewNoticia() {
+  var titulo = document.getElementById('not-titulo').value || 'Título de la noticia';
+  var autor = document.getElementById('not-autor').value || 'Autor';
+  var categoria = document.getElementById('not-categoria').value;
+  document.getElementById('not-preview-title').textContent = titulo;
+  document.getElementById('not-preview-meta').textContent = autor + ' · ' + formatDate(new Date().toISOString()) + (categoria ? ' · ' + categoria : '');
+  document.getElementById('not-preview-body').innerHTML = document.getElementById('not-rte').innerHTML;
+}
+
+function actualizarPreviewPortada() {
+  var url = document.getElementById('not-imagen').value;
+  var img = document.getElementById('not-imagen-preview');
+  if (url && !/^\s*<svg/i.test(url)) { img.src = url; img.style.display = 'inline-block'; } else { img.style.display = 'none'; }
+}
+
+function uploadImagenPortada(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('not-imagen').value = e.target.result;
+    actualizarPreviewPortada();
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+function abrirEditorNoticia(id) {
+  document.execCommand('styleWithCSS', false, true);
+  var cfg = getNoticiasConfig();
+  var post = id ? getNoticias().find(function(n) { return n.id === id; }) : null;
+  document.getElementById('not-editor-id').value = post ? post.id : '';
+  document.getElementById('not-editor-title').textContent = post ? 'Editar noticia' : 'Nueva noticia';
+  document.getElementById('not-titulo').value = post ? post.titulo : '';
+  document.getElementById('not-autor').value = post ? (post.autor || '') : '';
+  document.getElementById('not-categoria').value = post ? (post.categoria || '') : '';
+  document.getElementById('not-dias-anclado').value = post ? (post.dias_anclado || 0) : cfg.dias_anclaje_default;
+  document.getElementById('not-imagen').value = post ? (post.imagen_portada || '') : '';
+  document.getElementById('not-rte').innerHTML = post ? (post.contenido_html || '') : '';
+  actualizarPreviewPortada();
+  actualizarPreviewNoticia();
+  mostrarVistaNoticias('editor');
+}
+
+function cerrarEditorNoticia() {
+  mostrarVistaNoticias('feed');
+  renderNoticiasFeed();
+}
+
+function guardarNoticia(estado) {
+  var titulo = document.getElementById('not-titulo').value.trim();
+  if (!titulo) { showToast('El título es obligatorio'); return; }
+  var idField = document.getElementById('not-editor-id').value;
+  var diasAnclado = parseInt(document.getElementById('not-dias-anclado').value, 10) || 0;
+  var contenidoHtml = document.getElementById('not-rte').innerHTML;
+  var list = getNoticias();
+
+  if (idField) {
+    var id = parseInt(idField, 10);
+    var existente = list.find(function(n) { return n.id === id; });
+    if (existente) {
+      existente.titulo = titulo;
+      existente.autor = document.getElementById('not-autor').value.trim();
+      existente.categoria = document.getElementById('not-categoria').value.trim();
+      existente.imagen_portada = document.getElementById('not-imagen').value.trim();
+      existente.contenido_html = contenidoHtml;
+      existente.resumen = stripHtmlNoticia(contenidoHtml).substring(0, 200);
+      existente.dias_anclado = diasAnclado;
+      existente.fecha_ancla_expira = diasAnclado > 0 ? new Date(Date.now() + diasAnclado * 86400000).toISOString() : null;
+      existente.estado = estado;
+    }
+  } else {
+    list.push({
+      id: generarIdNoticia(),
+      tipo: 'manual',
+      titulo: titulo,
+      autor: document.getElementById('not-autor').value.trim(),
+      categoria: document.getElementById('not-categoria').value.trim(),
+      imagen_portada: document.getElementById('not-imagen').value.trim(),
+      contenido_html: contenidoHtml,
+      resumen: stripHtmlNoticia(contenidoHtml).substring(0, 200),
+      estado: estado,
+      fecha_creacion: new Date().toISOString(),
+      dias_anclado: diasAnclado,
+      fecha_ancla_expira: diasAnclado > 0 ? new Date(Date.now() + diasAnclado * 86400000).toISOString() : null,
+      persona_cumpleanos: null,
+      subtipo_cumpleanos: null
+    });
+  }
+  setNoticias(list);
+  showToast(estado === 'publicado' ? 'Noticia publicada' : 'Borrador guardado');
+  cerrarEditorNoticia();
+}
+
+// ----- Configuración -----
+var noticiaConfigWorking = null;
+
+function openNoticiaConfigModal() {
+  noticiaConfigWorking = getNoticiasConfig();
+  document.getElementById('cfg-agente-on').checked = !!noticiaConfigWorking.agente_activo;
+  document.getElementById('cfg-frecuencia').value = noticiaConfigWorking.frecuencia_horas;
+  document.getElementById('cfg-max-ciclo').value = noticiaConfigWorking.max_por_ciclo;
+  document.getElementById('cfg-idioma-es').checked = noticiaConfigWorking.idiomas.indexOf('es') !== -1;
+  document.getElementById('cfg-idioma-en').checked = noticiaConfigWorking.idiomas.indexOf('en') !== -1;
+  document.getElementById('cfg-idioma-ambos').checked = noticiaConfigWorking.idiomas.indexOf('ambos') !== -1;
+  document.getElementById('cfg-traducir').checked = !!noticiaConfigWorking.traducir_auto;
+  document.getElementById('cfg-cumple-on').checked = noticiaConfigWorking.cumple_activo !== false;
+  document.getElementById('cfg-dias-default').value = noticiaConfigWorking.dias_anclaje_default;
+  document.getElementById('cfg-columnas').value = noticiaConfigWorking.columnas_masonry;
+  document.getElementById('cfg-badges-on').checked = noticiaConfigWorking.mostrar_badges !== false;
+  document.getElementById('cfg-cumple-preview-box').style.display = 'none';
+  renderTopicosList();
+  renderPersonasCumpleList();
+  openModal('noticia-config');
+}
+
+function renderTopicosList() {
+  var topicos = noticiaConfigWorking.topicos || [];
+  document.getElementById('cfg-topicos-list').innerHTML = topicos.map(function(t, i) {
+    return '<span class="noticia-topic-chip">' + t + '<button onclick="eliminarTopico(' + i + ')">✕</button></span>';
+  }).join('') || '<span style="font-size:12px;color:var(--sec-1);">Sin tópicos todavía</span>';
+}
+function agregarTopico() {
+  var input = document.getElementById('cfg-topico-nuevo');
+  var val = input.value.trim();
+  if (!val) return;
+  noticiaConfigWorking.topicos = noticiaConfigWorking.topicos || [];
+  noticiaConfigWorking.topicos.push(val);
+  input.value = '';
+  renderTopicosList();
+}
+function eliminarTopico(i) {
+  noticiaConfigWorking.topicos.splice(i, 1);
+  renderTopicosList();
+}
+
+function renderPersonasCumpleList() {
+  var personas = getPersonasCumple();
+  var meses = ['', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  document.getElementById('cfg-personas-list').innerHTML = personas.map(function(p, i) {
+    return '<div class="noticia-persona-row"><span class="noticia-persona-name">' + p.nombre + '</span>' +
+      '<span class="noticia-persona-date">' + p.dia + ' ' + meses[p.mes] + '</span>' +
+      '<button class="btn-danger-sm" style="padding:3px 8px;" onclick="eliminarPersonaCumple(' + i + ')">🗑️</button></div>';
+  }).join('') || '<div style="font-size:12px;color:var(--sec-1);">Sin personas registradas</div>';
+}
+function agregarPersonaCumple() {
+  var nombre = document.getElementById('cfg-persona-nombre').value.trim();
+  var dia = parseInt(document.getElementById('cfg-persona-dia').value, 10);
+  var mes = parseInt(document.getElementById('cfg-persona-mes').value, 10);
+  if (!nombre || !dia || dia < 1 || dia > 31) { showToast('Nombre y día son obligatorios'); return; }
+  var personas = getPersonasCumple();
+  personas.push({ nombre: nombre, dia: dia, mes: mes });
+  setPersonasCumple(personas);
+  document.getElementById('cfg-persona-nombre').value = '';
+  document.getElementById('cfg-persona-dia').value = '';
+  renderPersonasCumpleList();
+  showToast('Persona añadida');
+}
+function eliminarPersonaCumple(i) {
+  var personas = getPersonasCumple();
+  personas.splice(i, 1);
+  setPersonasCumple(personas);
+  renderPersonasCumpleList();
+}
+
+function previewCumpleModal() {
+  var box = document.getElementById('cfg-cumple-preview-box');
+  if (box.style.display === 'none' || !box.style.display) {
+    var nombre = 'Nombre de ejemplo';
+    var msg = mensajesCumpleDia[Math.floor(Math.random() * mensajesCumpleDia.length)];
+    box.innerHTML = renderNoticiaCard({
+      id: 0, tipo: 'cumpleanos', subtipo_cumpleanos: 'dia',
+      titulo: '¡Feliz cumpleaños ' + nombre + '! 🎂',
+      autor: 'StoxAI', categoria: 'Cumpleaños',
+      imagen_portada: generarSvgDiaCumple(nombre),
+      contenido_html: '<p>' + msg + '</p>', resumen: msg,
+      fecha_creacion: new Date().toISOString(), anclado: true
+    }, getNoticiasConfig());
+    box.style.display = '';
+  } else {
+    box.style.display = 'none';
+  }
+}
+
+function buscarNoticiasAhora() {
+  showToast('Agente de noticias: conectando con servidor...');
+}
+
+function guardarNoticiaConfig() {
+  var idiomas = [];
+  if (document.getElementById('cfg-idioma-es').checked) idiomas.push('es');
+  if (document.getElementById('cfg-idioma-en').checked) idiomas.push('en');
+  if (document.getElementById('cfg-idioma-ambos').checked) idiomas.push('ambos');
+  noticiaConfigWorking.agente_activo = document.getElementById('cfg-agente-on').checked;
+  noticiaConfigWorking.frecuencia_horas = parseInt(document.getElementById('cfg-frecuencia').value, 10);
+  noticiaConfigWorking.max_por_ciclo = parseInt(document.getElementById('cfg-max-ciclo').value, 10) || 3;
+  noticiaConfigWorking.idiomas = idiomas;
+  noticiaConfigWorking.traducir_auto = document.getElementById('cfg-traducir').checked;
+  noticiaConfigWorking.cumple_activo = document.getElementById('cfg-cumple-on').checked;
+  noticiaConfigWorking.dias_anclaje_default = parseInt(document.getElementById('cfg-dias-default').value, 10) || 0;
+  noticiaConfigWorking.columnas_masonry = parseInt(document.getElementById('cfg-columnas').value, 10);
+  noticiaConfigWorking.mostrar_badges = document.getElementById('cfg-badges-on').checked;
+  setNoticiasConfig(noticiaConfigWorking);
+  closeModal('noticia-config');
+  showToast('Configuración guardada');
+  renderNoticiasFeed();
+}
+
+// ----- SVGs animados de cumpleaños -----
+function generarSvgPreCumple(nombre) {
+  var globos = [
+    { x: 60, color: '#ff6b6b', delay: '0s' },
+    { x: 130, color: '#fddc35', delay: '0.4s' },
+    { x: 200, color: '#4d96ff', delay: '0.8s' },
+    { x: 270, color: '#6bcb77', delay: '0.2s' },
+    { x: 340, color: '#ffd93d', delay: '0.6s' }
+  ].map(function(g) {
+    return '<g style="animation:noticiaGloboSube 3s ease-in-out infinite;animation-delay:' + g.delay + ';">' +
+      '<line x1="' + g.x + '" y1="150" x2="' + g.x + '" y2="200" stroke="#ffffff99" stroke-width="1.5"/>' +
+      '<ellipse cx="' + g.x + '" cy="120" rx="22" ry="28" fill="' + g.color + '"/>' +
+    '</g>';
+  }).join('');
+  var estrellas = [[40, 40, '0s'], [370, 60, '0.5s'], [340, 180, '1s'], [30, 190, '1.5s'], [200, 30, '0.7s']].map(function(s) {
+    return '<text x="' + s[0] + '" y="' + s[1] + '" font-size="18" fill="#fddc35" style="animation:noticiaEstrellaParpadea 2s ease-in-out infinite;animation-delay:' + s[2] + ';">✦</text>';
+  }).join('');
+  return '<svg viewBox="0 0 400 250" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs><linearGradient id="gradPre" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="#fddc35"/><stop offset="55%" stop-color="#ff6b6b"/><stop offset="100%" stop-color="#002364"/>' +
+    '</linearGradient></defs>' +
+    '<rect width="400" height="250" fill="url(#gradPre)"/>' +
+    estrellas + globos +
+    '<text x="200" y="225" text-anchor="middle" font-family="Inter,sans-serif" font-weight="700" font-size="20" fill="#ffffff">¡Se acerca tu día especial!</text>' +
+    (nombre ? '<text x="200" y="245" text-anchor="middle" font-family="Inter,sans-serif" font-size="13" fill="#ffffffcc">' + nombre + '</text>' : '') +
+  '</svg>';
+}
+
+function generarSvgDiaCumple(nombre) {
+  var confetiColores = ['#ff6b6b', '#fddc35', '#6bcb77', '#4d96ff', '#ffd93d', '#006ee1'];
+  var confeti = '';
+  for (var i = 0; i < 18; i++) {
+    var x = (i * 23) % 400;
+    var color = confetiColores[i % confetiColores.length];
+    var delay = (i % 6) * 0.3;
+    var dur = 2.5 + (i % 4) * 0.4;
+    confeti += '<rect x="' + x + '" y="-20" width="8" height="8" fill="' + color + '" style="animation:noticiaConfetiCae ' + dur + 's linear infinite;animation-delay:' + delay + 's;" transform="rotate(' + ((i * 37) % 360) + ' ' + (x + 4) + ' -16)"/>';
+  }
+  var globos = [
+    { x: 55, color: '#ff6b6b', delay: '0s' },
+    { x: 340, color: '#4d96ff', delay: '0.3s' },
+    { x: 90, color: '#fddc35', delay: '0.6s' },
+    { x: 310, color: '#6bcb77', delay: '0.9s' }
+  ].map(function(g) {
+    return '<g style="animation:noticiaGloboSubeFuerte 2.2s ease-in-out infinite;animation-delay:' + g.delay + ';">' +
+      '<line x1="' + g.x + '" y1="130" x2="' + g.x + '" y2="185" stroke="#ffffffaa" stroke-width="1.5"/>' +
+      '<ellipse cx="' + g.x + '" cy="95" rx="26" ry="32" fill="' + g.color + '"/>' +
+    '</g>';
+  }).join('');
+  return '<svg viewBox="0 0 400 250" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs><linearGradient id="gradDia" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="#006ee1"/><stop offset="60%" stop-color="#fddc35"/><stop offset="100%" stop-color="#ff6b6b"/>' +
+    '</linearGradient></defs>' +
+    '<rect width="400" height="250" fill="url(#gradDia)"/>' +
+    globos +
+    '<g transform="translate(200,190)">' +
+      '<rect x="-35" y="0" width="70" height="30" rx="4" fill="#ffffff"/>' +
+      '<rect x="-35" y="-10" width="70" height="12" rx="3" fill="#ff6b6b"/>' +
+      '<rect x="-4" y="-28" width="4" height="18" fill="#fddc35"/>' +
+      '<ellipse cx="-2" cy="-30" rx="4" ry="6" fill="#ffd93d" style="animation:noticiaLlamaParpadea 1s ease-in-out infinite;"/>' +
+      '<rect x="16" y="-28" width="4" height="18" fill="#fddc35"/>' +
+      '<ellipse cx="18" cy="-30" rx="4" ry="6" fill="#ffd93d" style="animation:noticiaLlamaParpadea 1.2s ease-in-out infinite;"/>' +
+      '<rect x="-24" y="-28" width="4" height="18" fill="#fddc35"/>' +
+      '<ellipse cx="-22" cy="-30" rx="4" ry="6" fill="#ffd93d" style="animation:noticiaLlamaParpadea 0.8s ease-in-out infinite;"/>' +
+    '</g>' +
+    confeti +
+    '<text x="200" y="60" text-anchor="middle" font-family="Inter,sans-serif" font-weight="700" font-size="26" fill="#ffffff" style="animation:noticiaTextoBounce 1.4s ease-in-out infinite;">¡Feliz cumpleaños!</text>' +
+    (nombre ? '<text x="200" y="85" text-anchor="middle" font-family="Inter,sans-serif" font-size="15" fill="#ffffff">' + nombre + '</text>' : '') +
+  '</svg>';
+}
+
+// ----- Automatización de posts de cumpleaños -----
+function checkCumpleanos() {
+  var cfg = getNoticiasConfig();
+  if (cfg.cumple_activo === false) return;
+  var personas = getPersonasCumple();
+  if (!personas.length) return;
+
+  var hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  var anioActual = hoy.getFullYear();
+  var noticias = getNoticias();
+  var cambios = false;
+
+  personas.forEach(function(persona) {
+    var proximoCumple = new Date(anioActual, persona.mes - 1, persona.dia);
+    proximoCumple.setHours(0, 0, 0, 0);
+    if (proximoCumple < hoy) proximoCumple = new Date(anioActual + 1, persona.mes - 1, persona.dia);
+    var diffDias = Math.round((proximoCumple - hoy) / 86400000);
+
+    var yaExistePre = noticias.some(function(n) {
+      return n.tipo === 'cumpleanos' && n.subtipo_cumpleanos === 'pre' && n.persona_cumpleanos === persona.nombre &&
+        new Date(n.fecha_creacion).getFullYear() === anioActual;
+    });
+    var yaExisteDia = noticias.some(function(n) {
+      return n.tipo === 'cumpleanos' && n.subtipo_cumpleanos === 'dia' && n.persona_cumpleanos === persona.nombre &&
+        new Date(n.fecha_creacion).getFullYear() === anioActual;
+    });
+
+    if (diffDias === 0 && !yaExisteDia) {
+      var msgDia = mensajesCumpleDia[Math.floor(Math.random() * mensajesCumpleDia.length)];
+      noticias.push({
+        id: generarIdNoticia(), tipo: 'cumpleanos',
+        titulo: '¡Feliz cumpleaños ' + persona.nombre + '! 🎂',
+        autor: 'StoxAI', categoria: 'Cumpleaños',
+        imagen_portada: generarSvgDiaCumple(persona.nombre),
+        contenido_html: '<p>' + msgDia + '</p>', resumen: msgDia,
+        estado: 'publicado', fecha_creacion: new Date().toISOString(),
+        dias_anclado: 1, fecha_ancla_expira: new Date(Date.now() + 1 * 86400000).toISOString(),
+        persona_cumpleanos: persona.nombre, subtipo_cumpleanos: 'dia'
+      });
+      cambios = true;
+    } else if (diffDias > 0 && diffDias <= 7 && !yaExistePre) {
+      var diasAncla = Math.min(7, diffDias);
+      var msgPre = mensajesCumplePre[Math.floor(Math.random() * mensajesCumplePre.length)];
+      noticias.push({
+        id: generarIdNoticia(), tipo: 'cumpleanos',
+        titulo: '¡El cumpleaños de ' + persona.nombre + ' se acerca! 🎉',
+        autor: 'StoxAI', categoria: 'Cumpleaños',
+        imagen_portada: generarSvgPreCumple(persona.nombre),
+        contenido_html: '<p>' + msgPre + '</p>', resumen: msgPre,
+        estado: 'publicado', fecha_creacion: new Date().toISOString(),
+        dias_anclado: diasAncla, fecha_ancla_expira: new Date(Date.now() + diasAncla * 86400000).toISOString(),
+        persona_cumpleanos: persona.nombre, subtipo_cumpleanos: 'pre'
+      });
+      cambios = true;
+    }
+  });
+
+  if (cambios) setNoticias(noticias);
+}
+
+function initNoticias() {
+  checkCumpleanos();
+}
+
 loadAll();
 setInterval(loadAll, 30000);
+initNoticias();
 </script>
 <div id="modal-foto-ampliada" onclick="closeFotoModal()">
   <button class="foto-modal-close" onclick="closeFotoModal()">×</button>
@@ -3212,6 +4050,123 @@ setInterval(loadAll, 30000);
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeConfirmModal()">Cancelar</button>
       <button class="btn-danger-sm" style="padding:8px 16px;font-size:12px;font-weight:500;" id="confirm-generic-btn" onclick="confirmGenericAction()">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIGURACIÓN NOTICIAS -->
+<div class="modal-overlay" id="modal-noticia-config">
+  <div class="modal modal-lg">
+    <div class="modal-title">⚙️ Configuración del Feed de Noticias</div>
+    <div class="modal-body" style="max-height:65vh;overflow-y:auto;">
+
+      <div class="noticia-config-section">
+        <div class="noticia-config-section-title">🤖 Agente autónomo de noticias</div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <div class="noticia-toggle-row">
+            <span style="font-size:12px;color:var(--geze-blau);">Activar agente autónomo</span>
+            <label class="noticia-switch"><input type="checkbox" id="cfg-agente-on"><span class="noticia-switch-track"></span></label>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label class="form-label">Tópicos de búsqueda</label>
+          <div id="cfg-topicos-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;"></div>
+          <div style="display:flex;gap:8px;">
+            <input class="form-input" id="cfg-topico-nuevo" placeholder="ej: automatización industrial" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();agregarTopico();}">
+            <button class="btn-secondary" onclick="agregarTopico()">+ Añadir</button>
+          </div>
+        </div>
+        <div class="form-row" style="margin-bottom:12px;">
+          <div class="form-group"><label class="form-label">Frecuencia</label>
+            <select class="form-input" id="cfg-frecuencia">
+              <option value="6">Cada 6 horas</option>
+              <option value="12">Cada 12 horas</option>
+              <option value="24">Cada 24 horas</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Máximo de noticias por ciclo</label><input class="form-input" id="cfg-max-ciclo" type="number" min="1" value="3"></div>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label class="form-label">Idiomas</label>
+          <div class="noticia-idiomas-row">
+            <label><input type="checkbox" id="cfg-idioma-es"> Español</label>
+            <label><input type="checkbox" id="cfg-idioma-en"> Inglés</label>
+            <label><input type="checkbox" id="cfg-idioma-ambos"> Ambos</label>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <div class="noticia-toggle-row">
+            <span style="font-size:12px;color:var(--geze-blau);">Traducir al español automáticamente</span>
+            <label class="noticia-switch"><input type="checkbox" id="cfg-traducir"><span class="noticia-switch-track"></span></label>
+          </div>
+        </div>
+        <button class="btn-secondary" onclick="buscarNoticiasAhora()">🔍 Buscar ahora</button>
+      </div>
+
+      <div class="noticia-config-section">
+        <div class="noticia-config-section-title">🎂 Cumpleaños del personal</div>
+        <div id="cfg-personas-list" style="margin-bottom:10px;"></div>
+        <div class="form-row" style="margin-bottom:8px;">
+          <div class="form-group"><label class="form-label">Nombre</label><input class="form-input" id="cfg-persona-nombre" placeholder="ej: María López"></div>
+          <div class="form-group"><label class="form-label">Día / Mes</label>
+            <div style="display:flex;gap:6px;">
+              <input class="form-input" id="cfg-persona-dia" type="number" min="1" max="31" placeholder="Día" style="width:70px;">
+              <select class="form-input" id="cfg-persona-mes">
+                <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+                <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+                <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+                <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;">
+          <button class="btn-secondary" onclick="agregarPersonaCumple()">+ Añadir persona</button>
+          <button class="btn-secondary" onclick="previewCumpleModal()">👁️ Preview del post</button>
+        </div>
+        <div id="cfg-cumple-preview-box" style="display:none;margin-bottom:14px;max-width:260px;"></div>
+        <div class="noticia-toggle-row">
+          <span style="font-size:12px;color:var(--geze-blau);">Activar posts automáticos de cumpleaños</span>
+          <label class="noticia-switch"><input type="checkbox" id="cfg-cumple-on"><span class="noticia-switch-track"></span></label>
+        </div>
+      </div>
+
+      <div class="noticia-config-section">
+        <div class="noticia-config-section-title">🛠️ Configuración general</div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Días por defecto de anclaje (manuales)</label><input class="form-input" id="cfg-dias-default" type="number" min="0" value="0"></div>
+          <div class="form-group"><label class="form-label">Columnas del masonry</label>
+            <select class="form-input" id="cfg-columnas">
+              <option value="3">3 columnas</option>
+              <option value="2">2 columnas</option>
+            </select>
+          </div>
+        </div>
+        <div class="noticia-toggle-row" style="margin-top:12px;">
+          <span style="font-size:12px;color:var(--geze-blau);">Mostrar badges de tipo de post</span>
+          <label class="noticia-switch"><input type="checkbox" id="cfg-badges-on" checked><span class="noticia-switch-track"></span></label>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('noticia-config')">Cerrar</button>
+      <button class="btn-primary" onclick="guardarNoticiaConfig()">Guardar configuración</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL INSERTAR HTML (editor de noticias) -->
+<div class="modal-overlay" id="modal-noticia-insert-html">
+  <div class="modal">
+    <div class="modal-title">&lt;/&gt; Insertar bloque HTML</div>
+    <div class="modal-sub">Pega el HTML que quieras insertar en el contenido de la noticia</div>
+    <div class="modal-body">
+      <textarea class="form-input" id="not-insert-html-textarea" rows="8" style="font-family:monospace;font-size:12px;" placeholder="&lt;div&gt;...&lt;/div&gt;"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('noticia-insert-html')">Cancelar</button>
+      <button class="btn-primary" onclick="insertarHtmlBloque()">Insertar</button>
     </div>
   </div>
 </div>
