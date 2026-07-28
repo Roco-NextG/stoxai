@@ -3363,6 +3363,11 @@ var noticiasConfigDefault = {
   mostrar_badges: true
 };
 
+var MESES_ES_CUMPLE = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+function formatearFechaCumple(dia, mes) {
+  return dia + ' de ' + MESES_ES_CUMPLE[mes - 1];
+}
+
 var mensajesCumplePre = [
   'Ya casi llega tu gran día — ¡prepárate para celebrarlo como se merece!',
   'La cuenta atrás ha comenzado. ¡Que se acerque la fiesta!',
@@ -3557,13 +3562,12 @@ function verNoticia(id) {
   noticiaActualId = id;
   var p = getNoticias().find(function(n) { return n.id === id; });
   if (!p) return;
-  document.getElementById('not-detail-titulo').textContent = p.titulo;
   var coverEl = document.getElementById('not-detail-cover');
   var coverInner = '';
   if (p.imagen_portada) {
     coverInner = /^\s*<svg/i.test(p.imagen_portada) ? p.imagen_portada : '<img src="' + p.imagen_portada + '" alt="">';
   }
-  coverEl.innerHTML = coverInner + '<div class="noticia-detail-cover-overlay"><div class="noticia-detail-cover-title">' + p.titulo + '</div></div>';
+  coverEl.innerHTML = coverInner + '<div class="noticia-detail-cover-overlay"><div class="noticia-detail-cover-title" id="not-detail-titulo">' + p.titulo + '</div></div>';
   var tipoLabel = { manual: 'Manual', automatica: 'Automática', cumpleanos: 'Cumpleaños' }[p.tipo] || p.tipo;
   var metaParts = [];
   if (p.autor) metaParts.push('👤 ' + p.autor);
@@ -3995,13 +3999,17 @@ function checkCumpleanos() {
       cambios = true;
     } else if (diffDias > 0 && diffDias <= 7 && !yaExistePre) {
       var diasAncla = Math.min(7, diffDias);
+      var fechaTexto = formatearFechaCumple(persona.dia, persona.mes);
+      var diasTexto = diffDias === 1 ? '1 día' : diffDias + ' días';
+      var verboQuedar = diffDias === 1 ? 'queda' : 'quedan';
       var msgPre = mensajesCumplePre[Math.floor(Math.random() * mensajesCumplePre.length)];
+      var contenidoPre = '<p>¡El cumpleaños de ' + persona.nombre + ' es el ' + fechaTexto + '! Aún ' + verboQuedar + ' ' + diasTexto + ' para celebrarlo juntos.</p><p>' + msgPre + '</p>';
       noticias.push({
         id: generarIdNoticia(), tipo: 'cumpleanos',
-        titulo: '¡El cumpleaños de ' + persona.nombre + ' se acerca! 🎉',
+        titulo: '¡El cumpleaños de ' + persona.nombre + ' es el ' + fechaTexto + '! 🎉',
         autor: 'StoxAI', categoria: 'Cumpleaños',
         imagen_portada: generarSvgPreCumple(persona.nombre),
-        contenido_html: '<p>' + msgPre + '</p>', resumen: msgPre,
+        contenido_html: contenidoPre, resumen: stripHtmlNoticia(contenidoPre).substring(0, 200),
         estado: 'publicado', fecha_creacion: new Date().toISOString(),
         dias_anclado: diasAncla, fecha_ancla_expira: new Date(Date.now() + diasAncla * 86400000).toISOString(),
         persona_cumpleanos: persona.nombre, subtipo_cumpleanos: 'pre'
@@ -4195,8 +4203,11 @@ initNoticias();
           <div class="form-group"><label class="form-label">Días por defecto de anclaje (manuales)</label><input class="form-input" id="cfg-dias-default" type="number" min="0" value="0"></div>
           <div class="form-group"><label class="form-label">Columnas del masonry</label>
             <select class="form-input" id="cfg-columnas">
-              <option value="3">3 columnas</option>
               <option value="2">2 columnas</option>
+              <option value="3">3 columnas</option>
+              <option value="4">4 columnas</option>
+              <option value="5">5 columnas</option>
+              <option value="6">6 columnas</option>
             </select>
           </div>
         </div>
