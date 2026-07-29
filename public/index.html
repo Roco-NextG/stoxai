@@ -3392,28 +3392,124 @@ function generarIdNoticia() {
   return id;
 }
 
+// Cache en memoria poblado por la API; si es null, se usa localStorage como fallback temporal
+var noticiasCache = null;
+var noticiasBorradoresCache = null;
+var personasCumpleCache = null;
+var noticiasConfigCache = null;
+
 function getNoticias() {
+  if (noticiasCache !== null) return noticiasCache;
   try { return JSON.parse(localStorage.getItem(NOTICIAS_KEY)) || []; } catch (e) { return []; }
 }
 function setNoticias(list) {
+  noticiasCache = list;
   localStorage.setItem(NOTICIAS_KEY, JSON.stringify(list));
+}
+function getBorradores() {
+  if (noticiasBorradoresCache !== null) return noticiasBorradoresCache;
+  return getNoticias().filter(function(n) { return n.estado === 'borrador'; });
 }
 function getNoticiasConfig() {
   var stored = null;
-  try { stored = JSON.parse(localStorage.getItem(NOTICIAS_CONFIG_KEY)); } catch (e) {}
+  if (noticiasConfigCache !== null) {
+    stored = noticiasConfigCache;
+  } else {
+    try { stored = JSON.parse(localStorage.getItem(NOTICIAS_CONFIG_KEY)); } catch (e) {}
+  }
   var cfg = {};
   for (var k in noticiasConfigDefault) cfg[k] = noticiasConfigDefault[k];
   if (stored) for (var k2 in stored) cfg[k2] = stored[k2];
   return cfg;
 }
 function setNoticiasConfig(cfg) {
+  noticiasConfigCache = cfg;
   localStorage.setItem(NOTICIAS_CONFIG_KEY, JSON.stringify(cfg));
 }
 function getPersonasCumple() {
+  if (personasCumpleCache !== null) return personasCumpleCache;
   try { return JSON.parse(localStorage.getItem(NOTICIAS_PERSONAS_KEY)) || []; } catch (e) { return []; }
 }
 function setPersonasCumple(list) {
+  personasCumpleCache = list;
   localStorage.setItem(NOTICIAS_PERSONAS_KEY, JSON.stringify(list));
+}
+
+// ----- Carga desde la API (con fallback a localStorage si el servidor no responde) -----
+function loadNoticias() {
+  return fetch('/api/noticias').then(function(r) { return r.json(); }).then(function(data) {
+    if (Array.isArray(data)) {
+      data.forEach(function(n) { n.id = Number(n.id); });
+      noticiasCache = data;
+      localStorage.setItem(NOTICIAS_KEY, JSON.stringify(data));
+    }
+    renderNoticiasFeed();
+    return getNoticias();
+  }).catch(function() {
+    renderNoticiasFeed();
+    return getNoticias();
+  });
+}
+function loadBorradores() {
+  return fetch('/api/noticias-borradores').then(function(r) { return r.json(); }).then(function(data) {
+    if (Array.isArray(data)) {
+      data.forEach(function(n) { n.id = Number(n.id); });
+      noticiasBorradoresCache = data;
+    }
+    return getBorradores();
+  }).catch(function() { return getBorradores(); });
+}
+function loadPersonasCumpleanos() {
+  return fetch('/api/noticias-personas').then(function(r) { return r.json(); }).then(function(data) {
+    if (Array.isArray(data)) {
+      personasCumpleCache = data;
+      localStorage.setItem(NOTICIAS_PERSONAS_KEY, JSON.stringify(data));
+    }
+    if (document.getElementById('cfg-personas-list')) renderPersonasCumpleList();
+    return getPersonasCumple();
+  }).catch(function() { return getPersonasCumple(); });
+}
+function loadConfig() {
+  return fetch('/api/noticias-config').then(function(r) { return r.json(); }).then(function(data) {
+    if (data && typeof data === 'object' && data.general) {
+      noticiasConfigCache = data.general;
+      localStorage.setItem(NOTICIAS_CONFIG_KEY, JSON.stringify(data.general));
+    }
+    renderNoticiasFeed();
+    return getNoticiasConfig();
+  }).catch(function() { return getNoticiasConfig(); });
+}
+
+// ----- Escritura hacia la API (fire-and-forget, el estado local ya se actualizó de forma optimista) -----
+function apiAddNoticia(noticia) {
+  return fetch('/api/add-noticia', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(noticia)
+  }).then(function(r) { return r.json(); }).then(function() { return loadNoticias(); }).catch(function() {});
+}
+function apiEditNoticia(noticia) {
+  return fetch('/api/edit-noticia', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(noticia)
+  }).then(function(r) { return r.json(); }).then(function() { return loadNoticias(); }).catch(function() {});
+}
+function apiDeleteNoticia(id) {
+  return fetch('/api/delete-noticia', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id })
+  }).then(function(r) { return r.json(); }).then(function() { return loadNoticias(); }).catch(function() {});
+}
+function apiAddPersona(persona) {
+  return fetch('/api/add-noticia-persona', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(persona)
+  }).then(function(r) { return r.json(); }).then(function() { return loadPersonasCumpleanos(); }).catch(function() {});
+}
+function apiDeletePersona(id) {
+  return fetch('/api/delete-noticia-persona', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id })
+  }).then(function(r) { return r.json(); }).then(function() { return loadPersonasCumpleanos(); }).catch(function() {});
+}
+function apiSaveConfig(cfg) {
+  return fetch('/api/save-noticia-config', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clave: 'general', valor: cfg })
+  }).then(function(r) { return r.json(); }).then(function() { return loadConfig(); }).catch(function() {});
 }
 
 function calcularAnclado(post) {
@@ -3588,11 +3684,13 @@ function eliminarNoticiaActual() {
   if (noticiaActualId == null) return;
   var p = getNoticias().find(function(n) { return n.id === noticiaActualId; });
   openConfirmModal('🗑️ Eliminar noticia', 'Se eliminará "' + (p ? p.titulo : '') + '" permanentemente.', function() {
-    var list = getNoticias().filter(function(n) { return n.id !== noticiaActualId; });
+    var idAEliminar = noticiaActualId;
+    var list = getNoticias().filter(function(n) { return n.id !== idAEliminar; });
     setNoticias(list);
     showToast('Noticia eliminada');
     volverAFeedNoticias();
     renderNoticiasFeed();
+    apiDeleteNoticia(idAEliminar);
   });
 }
 
@@ -3733,8 +3831,10 @@ function guardarNoticia(estado) {
   var diasAnclado = parseInt(document.getElementById('not-dias-anclado').value, 10) || 0;
   var contenidoHtml = document.getElementById('not-rte').innerHTML;
   var list = getNoticias();
+  var noticiaParaApi = null;
+  var esEdicion = !!idField;
 
-  if (idField) {
+  if (esEdicion) {
     var id = parseInt(idField, 10);
     var existente = list.find(function(n) { return n.id === id; });
     if (existente) {
@@ -3747,9 +3847,10 @@ function guardarNoticia(estado) {
       existente.dias_anclado = diasAnclado;
       existente.fecha_ancla_expira = diasAnclado > 0 ? new Date(Date.now() + diasAnclado * 86400000).toISOString() : null;
       existente.estado = estado;
+      noticiaParaApi = existente;
     }
   } else {
-    list.push({
+    var nuevaNoticia = {
       id: generarIdNoticia(),
       tipo: 'manual',
       titulo: titulo,
@@ -3764,11 +3865,17 @@ function guardarNoticia(estado) {
       fecha_ancla_expira: diasAnclado > 0 ? new Date(Date.now() + diasAnclado * 86400000).toISOString() : null,
       persona_cumpleanos: null,
       subtipo_cumpleanos: null
-    });
+    };
+    list.push(nuevaNoticia);
+    noticiaParaApi = nuevaNoticia;
   }
   setNoticias(list);
   showToast(estado === 'publicado' ? 'Noticia publicada' : 'Borrador guardado');
   cerrarEditorNoticia();
+  if (noticiaParaApi) {
+    if (esEdicion) apiEditNoticia(noticiaParaApi);
+    else apiAddNoticia(noticiaParaApi);
+  }
 }
 
 // ----- Configuración -----
@@ -3828,18 +3935,22 @@ function agregarPersonaCumple() {
   var mes = parseInt(document.getElementById('cfg-persona-mes').value, 10);
   if (!nombre || !dia || dia < 1 || dia > 31) { showToast('Nombre y día son obligatorios'); return; }
   var personas = getPersonasCumple();
-  personas.push({ nombre: nombre, dia: dia, mes: mes });
+  var nuevaPersona = { nombre: nombre, dia: dia, mes: mes };
+  personas.push(nuevaPersona);
   setPersonasCumple(personas);
   document.getElementById('cfg-persona-nombre').value = '';
   document.getElementById('cfg-persona-dia').value = '';
   renderPersonasCumpleList();
   showToast('Persona añadida');
+  apiAddPersona(nuevaPersona);
 }
 function eliminarPersonaCumple(i) {
   var personas = getPersonasCumple();
+  var persona = personas[i];
   personas.splice(i, 1);
   setPersonasCumple(personas);
   renderPersonasCumpleList();
+  if (persona && persona.id != null) apiDeletePersona(persona.id);
 }
 
 function previewCumpleModal() {
@@ -3883,6 +3994,7 @@ function guardarNoticiaConfig() {
   closeModal('noticia-config');
   showToast('Configuración guardada');
   renderNoticiasFeed();
+  apiSaveConfig(noticiaConfigWorking);
 }
 
 // ----- SVGs animados de cumpleaños -----
@@ -3968,6 +4080,7 @@ function checkCumpleanos() {
   var anioActual = hoy.getFullYear();
   var noticias = getNoticias();
   var cambios = false;
+  var nuevasParaApi = [];
 
   personas.forEach(function(persona) {
     var proximoCumple = new Date(anioActual, persona.mes - 1, persona.dia);
@@ -3986,7 +4099,7 @@ function checkCumpleanos() {
 
     if (diffDias === 0 && !yaExisteDia) {
       var msgDia = mensajesCumpleDia[Math.floor(Math.random() * mensajesCumpleDia.length)];
-      noticias.push({
+      var postDia = {
         id: generarIdNoticia(), tipo: 'cumpleanos',
         titulo: '¡Feliz cumpleaños ' + persona.nombre + '! 🎂',
         autor: 'StoxAI', categoria: 'Cumpleaños',
@@ -3995,7 +4108,9 @@ function checkCumpleanos() {
         estado: 'publicado', fecha_creacion: new Date().toISOString(),
         dias_anclado: 1, fecha_ancla_expira: new Date(Date.now() + 1 * 86400000).toISOString(),
         persona_cumpleanos: persona.nombre, subtipo_cumpleanos: 'dia'
-      });
+      };
+      noticias.push(postDia);
+      nuevasParaApi.push(postDia);
       cambios = true;
     } else if (diffDias > 0 && diffDias <= 7 && !yaExistePre) {
       var diasAncla = Math.min(7, diffDias);
@@ -4004,7 +4119,7 @@ function checkCumpleanos() {
       var verboQuedar = diffDias === 1 ? 'queda' : 'quedan';
       var msgPre = mensajesCumplePre[Math.floor(Math.random() * mensajesCumplePre.length)];
       var contenidoPre = '<p>¡El cumpleaños de ' + persona.nombre + ' es el ' + fechaTexto + '! Aún ' + verboQuedar + ' ' + diasTexto + ' para celebrarlo juntos.</p><p>' + msgPre + '</p>';
-      noticias.push({
+      var postPre = {
         id: generarIdNoticia(), tipo: 'cumpleanos',
         titulo: '¡El cumpleaños de ' + persona.nombre + ' es el ' + fechaTexto + '! 🎉',
         autor: 'StoxAI', categoria: 'Cumpleaños',
@@ -4013,12 +4128,17 @@ function checkCumpleanos() {
         estado: 'publicado', fecha_creacion: new Date().toISOString(),
         dias_anclado: diasAncla, fecha_ancla_expira: new Date(Date.now() + diasAncla * 86400000).toISOString(),
         persona_cumpleanos: persona.nombre, subtipo_cumpleanos: 'pre'
-      });
+      };
+      noticias.push(postPre);
+      nuevasParaApi.push(postPre);
       cambios = true;
     }
   });
 
-  if (cambios) setNoticias(noticias);
+  if (cambios) {
+    setNoticias(noticias);
+    nuevasParaApi.forEach(function(n) { apiAddNoticia(n); });
+  }
 }
 
 function desanclarPreCumpleanosDelDia() {
@@ -4028,6 +4148,7 @@ function desanclarPreCumpleanosDelDia() {
   var hoyMes = hoy.getMonth() + 1;
   var hoyDia = hoy.getDate();
   var cambios = false;
+  var actualizadosParaApi = [];
 
   noticias.forEach(function(n) {
     if (n.tipo !== 'cumpleanos' || n.subtipo_cumpleanos !== 'pre') return;
@@ -4039,21 +4160,30 @@ function desanclarPreCumpleanosDelDia() {
         n.dias_anclado = 0;
         n.fecha_ancla_expira = null;
         cambios = true;
+        actualizadosParaApi.push({ id: n.id, anclado: false, dias_anclado: 0, fecha_ancla_expira: null });
       }
     }
   });
 
-  if (cambios) setNoticias(noticias);
+  if (cambios) {
+    setNoticias(noticias);
+    actualizadosParaApi.forEach(function(u) { apiEditNoticia(u); });
+  }
 }
 
 function initNoticias() {
-  checkCumpleanos();
-  desanclarPreCumpleanosDelDia();
+  loadBorradores();
+  loadConfig();
+  Promise.all([loadNoticias(), loadPersonasCumpleanos()]).then(function() {
+    checkCumpleanos();
+    desanclarPreCumpleanosDelDia();
+  });
 }
 
 loadAll();
 setInterval(loadAll, 30000);
 initNoticias();
+setInterval(loadNoticias, 30000);
 </script>
 <div id="modal-foto-ampliada" onclick="closeFotoModal()">
   <button class="foto-modal-close" onclick="closeFotoModal()">×</button>

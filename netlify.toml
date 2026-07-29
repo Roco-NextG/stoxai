@@ -298,3 +298,58 @@
   from = "/api/delete-kanban-tarjeta-etiqueta"
   to = "/.netlify/functions/api-delete-kanban-tarjeta-etiqueta"
   status = 200
+
+[[redirects]]
+  from = "/api/noticias"
+  to = "/.netlify/functions/api-noticias"
+  status = 200
+
+[[redirects]]
+  from = "/api/noticias-borradores"
+  to = "/.netlify/functions/api-noticias-borradores"
+  status = 200
+
+[[redirects]]
+  from = "/api/add-noticia"
+  to = "/.netlify/functions/api-add-noticia"
+  status = 200
+
+[[redirects]]
+  from = "/api/edit-noticia"
+  to = "/.netlify/functions/api-edit-noticia"
+  status = 200
+
+[[redirects]]
+  from = "/api/delete-noticia"
+  to = "/.netlify/functions/api-delete-noticia"
+  status = 200
+
+[[redirects]]
+  from = "/api/noticias-personas"
+  to = "/.netlify/functions/api-noticias-personas"
+  status = 200
+
+[[redirects]]
+  from = "/api/add-noticia-persona"
+  to = "/.netlify/functions/api-add-noticia-persona"
+  status = 200
+
+[[redirects]]
+  from = "/api/edit-noticia-persona"
+  to = "/.netlify/functions/api-edit-noticia-persona"
+  status = 200
+
+[[redirects]]
+  from = "/api/delete-noticia-persona"
+  to = "/.netlify/functions/api-delete-noticia-persona"
+  status = 200
+
+[[redirects]]
+  from = "/api/noticias-config"
+  to = "/.netlify/functions/api-noticias-config"
+  status = 200
+
+[[redirects]]
+  from = "/api/save-noticia-config"
+  to = "/.netlify/functions/api-save-noticia-config"
+  status = 200
