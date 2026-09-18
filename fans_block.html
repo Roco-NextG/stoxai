@@ -1,0 +1,83 @@
+﻿  <!-- FANS PANEL -->
+  <div class="panel-section" id="panel-enchufes">
+    <div class="section-header">
+      <div class="section-title-group">
+        <div class="frame-accent"><div class="fl"></div><div class="fl"></div></div>
+        <span class="section-title">Fans</span>
+        <span class="status-badge status-warn" id="enchufes-status-badge"><span class="status-dot"></span><span id="enchufes-status-text">Comprobando...</span></span>
+      </div>
+    </div>
+
+    <div class="table-card enchufes-key-group" id="enchufes-key-card" style="padding:20px;display:none;">
+      <div class="form-group">
+        <div class="form-label">Clave API de Fans</div>
+        <div style="display:flex;gap:8px;">
+          <input class="form-input" type="password" id="enchufes-key-input" placeholder="Clave API" style="flex:1;" autocomplete="off">
+          <button class="btn-primary" onclick="enchufesSaveKey()">Guardar</button>
+        </div>
+        <div style="font-size:11px;color:var(--sec-2);margin-top:4px;">Se guarda solo en este navegador.</div>
+      </div>
+    </div>
+
+    <div id="enchufes-controls">
+      <div class="table-card fan-plane-card" style="padding:20px;">
+        <div class="fan-master-row">
+          <button type="button" class="fan-master-btn" id="fan-master-btn" title="Todos los fans">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618Z"/><circle cx="12" cy="12" r="1.4"/></svg>
+          </button>
+          <div class="fan-master-label">Todos los fans<br><span class="fan-master-sub">Enciende o apaga todos los ventiladores activos a la vez</span></div>
+        </div>
+        <div class="fan-schedule-row">
+          <label class="fan-schedule-switch" title="Apagado automatico">
+            <input type="checkbox" id="fan-schedule-auto-checkbox" onchange="onScheduleAutoChange()">
+            <span class="fan-schedule-slider"></span>
+          </label>
+          <div class="fan-master-label">Apagado autom├ítico<br><span class="fan-master-sub" id="fan-schedule-status-sub">Desactivado ÔÇö el encendido siempre es manual</span></div>
+          <button type="button" class="btn-icon" id="fan-schedule-edit-btn" onclick="toggleScheduleEditor()" title="Configurar hora de apagado">Ô£Ä</button>
+        </div>
+        <div class="fan-schedule-editor" id="fan-schedule-editor" style="display:none;">
+          <div class="form-group">
+            <div class="form-label">Hora de apagado</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input class="form-input" type="time" id="fan-schedule-time-input" style="flex:1;max-width:160px;">
+              <button class="btn-primary" onclick="saveSchedule()">Guardar</button>
+            </div>
+            <div style="font-size:11px;color:var(--sec-2);margin-top:4px;">Si estan encendidos a esa hora, se apagan automaticamente. Una vez al dia, no interfiere si ya estan apagados.</div>
+          </div>
+        </div>
+        <div class="fan-plane-toolbar">
+          <span class="fan-plane-hint" id="fan-plane-hint">Plano del almac├®n ÔÇö pulsa un ventilador o una zona para alternar su estado</span>
+          <button class="btn-secondary" id="fan-view-toggle" onclick="toggleFanView()">Ver controles cl├ísicos</button>
+        </div>
+        <div class="fan-plane-frame" id="fan-plane-frame">
+          <img src="/enchufes/plano.svg" alt="Plano del almac├®n" class="fan-plane-img">
+        </div>
+
+        <div class="enchufes-grid" id="enchufes-classic-grid" style="display:none;">
+          <div class="kpi-card">
+            <div class="kpi-label">Fan One</div>
+            <div class="enchufes-btn-row">
+              <button class="btn-success" onclick="enchufesSend('fan_one','on',this)">ON</button>
+              <button class="btn-danger" onclick="enchufesSend('fan_one','off',this)">OFF</button>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Fan Two</div>
+            <div class="enchufes-btn-row">
+              <button class="btn-success" onclick="enchufesSend('fan_two','on',this)">ON</button>
+              <button class="btn-danger" onclick="enchufesSend('fan_two','off',this)">OFF</button>
+            </div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-label">Todos los fans</div>
+            <div class="enchufes-btn-row">
+              <button class="btn-success" onclick="enchufesSend('all','on',this)">TODOS ON</button>
+              <button class="btn-danger" onclick="enchufesSend('all','off',this)">TODOS OFF</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="btn-secondary" onclick="enchufesChangeKey()">Cambiar clave API</button>
+    </div>
+  </div>
+

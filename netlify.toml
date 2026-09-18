@@ -353,3 +353,45 @@
   from = "/api/save-noticia-config"
   to = "/.netlify/functions/api-save-noticia-config"
   status = 200
+
+# --- Modulo Control de Enchufes (independiente) ---
+
+[[redirects]]
+  from = "/api/set-command"
+  to = "/.netlify/functions/enchufes-set-command"
+  status = 200
+
+[[redirects]]
+  from = "/api/get-command"
+  to = "/.netlify/functions/enchufes-get-command"
+  status = 200
+
+[[redirects]]
+  from = "/api/ack-command"
+  to = "/.netlify/functions/enchufes-ack-command"
+  status = 200
+
+[[redirects]]
+  from = "/api/heartbeat"
+  to = "/.netlify/functions/enchufes-heartbeat"
+  status = 200
+
+[[redirects]]
+  from = "/api/status"
+  to = "/.netlify/functions/enchufes-status"
+  status = 200
+
+[[redirects]]
+  from = "/api/report-state"
+  to = "/.netlify/functions/enchufes-report-state"
+  status = 200
+
+[[redirects]]
+  from = "/api/set-schedule"
+  to = "/.netlify/functions/enchufes-set-schedule"
+  status = 200
+
+[[redirects]]
+  from = "/api/schedule"
+  to = "/.netlify/functions/enchufes-get-schedule"
+  status = 200

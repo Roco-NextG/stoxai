@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fans</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --card: #171d2e;
+    --border: #2a3245;
+    --text: #e7ebf3;
+    --muted: #8a93a8;
+    --on: #1a9c5c;
+    --on-hover: #22b56b;
+    --off: #b8382f;
+    --off-hover: #d1453b;
+    --accent: #3d7bfd;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px 80px;
+  }
+  .wrap { width: 100%; max-width: 480px; }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  h1 { font-size: 20px; font-weight: 600; }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .dot.online { background: var(--on); box-shadow: 0 0 0 3px rgba(26,156,92,0.25); animation: pulse 2s infinite; }
+  .dot.offline { background: var(--off); }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .card h2 { font-size: 15px; font-weight: 500; color: var(--muted); margin-bottom: 12px; }
+
+  .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .btn {
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    padding: 22px 0;
+    cursor: pointer;
+    color: #fff;
+    transition: transform 0.08s ease, opacity 0.15s ease;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.5; cursor: default; transform: none; }
+  .btn.on { background: var(--on); }
+  .btn.on:hover:not(:disabled) { background: var(--on-hover); }
+  .btn.off { background: var(--off); }
+  .btn.off:hover:not(:disabled) { background: var(--off-hover); }
+
+  .all-card { border-color: var(--accent); }
+  .all-card h2 { color: var(--text); }
+
+  .key-card p { color: var(--muted); font-size: 14px; margin-bottom: 14px; line-height: 1.5; }
+  .key-row { display: flex; gap: 10px; }
+  .key-row input {
+    flex: 1;
+    background: #0f1420;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-size: 14px;
+  }
+  .key-row input:focus { outline: none; border-color: var(--accent); }
+  .key-row button {
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-weight: 600;
+    padding: 0 20px;
+    cursor: pointer;
+  }
+
+  .change-key {
+    display: block;
+    margin: 8px auto 0;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 13px;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translate(-50%, 20px);
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    max-width: 90vw;
+    text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .toast.error { border-color: var(--off); color: #ff8b83; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Fans</h1>
+      <div class="status-pill">
+        <span class="dot" id="statusDot"></span>
+        <span id="statusText">Comprobando...</span>
+      </div>
+    </header>
+
+    <div class="card key-card" id="keyCard" hidden>
+      <p>Introduce la clave API para poder controlar los fans desde este dispositivo. Se guarda solo en este navegador.</p>
+      <div class="key-row">
+        <input type="password" id="keyInput" placeholder="Clave API" autocomplete="off">
+        <button id="saveKeyBtn">Guardar</button>
+      </div>
+    </div>
+
+    <main id="controls" hidden>
+      <section class="card">
+        <h2>Fan One</h2>
+        <div class="btn-row">
+          <button class="btn on" data-plug="fan_one" data-state="on">ON</button>
+          <button class="btn off" data-plug="fan_one" data-state="off">OFF</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Fan Two</h2>
+        <div class="btn-row">
+          <button class="btn on" data-plug="fan_two" data-state="on">ON</button>
+          <button class="btn off" data-plug="fan_two" data-state="off">OFF</button>
+        </div>
+      </section>
+
+      <section class="card all-card">
+        <h2>Todos los fans</h2>
+        <div class="btn-row">
+          <button class="btn on" data-plug="all" data-state="on">TODOS ON</button>
+          <button class="btn off" data-plug="all" data-state="off">TODOS OFF</button>
+        </div>
+      </section>
+
+      <button class="change-key" id="changeKeyBtn">Cambiar clave API</button>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  const API_KEY_STORAGE = "enchufes_api_key";
+
+  const statusDot = document.getElementById("statusDot");
+  const statusText = document.getElementById("statusText");
+  const keyCard = document.getElementById("keyCard");
+  const controls = document.getElementById("controls");
+  const keyInput = document.getElementById("keyInput");
+  const saveKeyBtn = document.getElementById("saveKeyBtn");
+  const changeKeyBtn = document.getElementById("changeKeyBtn");
+  const toast = document.getElementById("toast");
+
+  const getApiKey = () => localStorage.getItem(API_KEY_STORAGE);
+  const setApiKey = (key) => localStorage.setItem(API_KEY_STORAGE, key);
+  const clearApiKey = () => localStorage.removeItem(API_KEY_STORAGE);
+
+  function renderKeyState() {
+    const hasKey = !!getApiKey();
+    keyCard.hidden = hasKey;
+    controls.hidden = !hasKey;
+  }
+
+  let toastTimer;
+  function showToast(message, isError) {
+    clearTimeout(toastTimer);
+    toast.textContent = message;
+    toast.className = "toast show" + (isError ? " error" : "");
+    toastTimer = setTimeout(() => { toast.className = "toast"; }, 3000);
+  }
+
+  saveKeyBtn.addEventListener("click", () => {
+    const value = keyInput.value.trim();
+    if (!value) return;
+    setApiKey(value);
+    keyInput.value = "";
+    renderKeyState();
+    showToast("Clave guardada");
+  });
+
+  keyInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") saveKeyBtn.click();
+  });
+
+  changeKeyBtn.addEventListener("click", () => {
+    clearApiKey();
+    renderKeyState();
+  });
+
+  function labelFor(plug) {
+    if (plug === "fan_one") return "Fan One";
+    if (plug === "fan_two") return "Fan Two";
+    return "Todos los fans";
+  }
+
+  document.querySelectorAll(".btn[data-plug]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const plug = btn.dataset.plug;
+      const state = btn.dataset.state;
+      const apiKey = getApiKey();
+      if (!apiKey) { renderKeyState(); return; }
+
+      btn.disabled = true;
+      try {
+        const res = await fetch("/api/set-command", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-KEY": apiKey
+          },
+          body: JSON.stringify({ plug, state })
+        });
+
+        if (res.status === 401) {
+          clearApiKey();
+          renderKeyState();
+          showToast("Clave API incorrecta", true);
+          return;
+        }
+
+        if (!res.ok) throw new Error("Error del servidor");
+
+        showToast(`Comando enviado: ${labelFor(plug)} -> ${state.toUpperCase()}`);
+      } catch (err) {
+        showToast("Error al enviar el comando", true);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  });
+
+  async function pollStatus() {
+    try {
+      const res = await fetch("/api/status");
+      const data = await res.json();
+      if (data.online) {
+        statusDot.className = "dot online";
+        statusText.textContent = "Raspberry Pi: online";
+      } else {
+        statusDot.className = "dot offline";
+        statusText.textContent = "Raspberry Pi: offline";
+      }
+    } catch (err) {
+      statusDot.className = "dot offline";
+      statusText.textContent = "Sin conexion";
+    }
+  }
+
+  renderKeyState();
+  pollStatus();
+  setInterval(pollStatus, 10000);
+</script>
+</body>
+</html>

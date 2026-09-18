@@ -489,6 +489,17 @@
   @keyframes noticiaConfetiCae{0%{transform:translateY(-10px) rotate(0deg);opacity:1;}100%{transform:translateY(120px) rotate(360deg);opacity:0;}}
   @keyframes noticiaTextoBounce{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
   @keyframes noticiaLlamaParpadea{0%,100%{opacity:0.7;transform:scaleY(1);}50%{opacity:1;transform:scaleY(1.15);}}
+
+  /* DATA PROCESSOR */
+  .dp-card-disabled{cursor:default;opacity:0.55;}
+  .dp-card-disabled:hover{box-shadow:none;border-color:var(--sandgrau);}
+  .dp-badge-soon{display:inline-block;font-size:10px;font-weight:600;color:var(--sec-2);background:var(--sandgrau);padding:2px 8px;border-radius:10px;margin-top:6px;}
+  .dp-tool-icon{font-size:32px;}
+  .dp-chart-card{background:var(--white);border:0.5px solid var(--sandgrau);border-radius:12px;padding:20px;margin-bottom:20px;}
+  .dp-chart-title{font-size:12px;font-weight:600;color:var(--geze-blau);margin-bottom:12px;}
+  .dp-fk-chip{cursor:pointer;transition:all 150ms ease-out;}
+  .dp-fk-chip.active{background:var(--geze-blau);color:var(--white);border-color:var(--geze-blau);}
+  .dp-fk-chip.dp-fk-chip-error{border-color:var(--danger);color:var(--danger);}
 </style>
 </head>
 <body>
@@ -548,6 +559,10 @@
       <div class="sidepanel-item" id="tab-enchufes" onclick="showPanel('enchufes')">
         <span class="sidepanel-item-initial">F</span>
         <span class="sidepanel-item-label">Fans</span>
+      </div>
+      <div class="sidepanel-item" id="tab-dataprocessor" onclick="showPanel('dataprocessor')">
+        <span class="sidepanel-item-initial">P</span>
+        <span class="sidepanel-item-label">Data-Processor</span>
       </div>
     </nav>
   </aside>
@@ -878,6 +893,253 @@
       </div>
       <button class="btn-secondary" onclick="enchufesChangeKey()">Cambiar clave API</button>
     </div>
+  </div>
+  <!-- DATA PROCESSOR PANEL -->
+  <div class="panel-section" id="panel-dataprocessor">
+
+    <!-- Vista 1: Grid de herramientas -->
+    <div id="vista-dp-grid">
+      <div class="section-header">
+        <div class="section-title-group">
+          <div class="frame-accent"><div class="fl"></div><div class="fl"></div></div>
+          <span class="section-title">Data-Processor</span>
+        </div>
+      </div>
+      <div class="bancos-grid">
+        <div class="banco-card" onclick="dpAbrirTool('mtb')">
+          <div class="banco-card-img"><div class="banco-card-img-placeholder dp-tool-icon">⚙️</div></div>
+          <div class="banco-card-body">
+            <div class="banco-card-name">MTB — Caracterizacion de Motor</div>
+            <div class="banco-card-meta">Sube un export Catman (.xlsx) y genera el informe de curvas</div>
+          </div>
+        </div>
+        <div class="banco-card" onclick="dpAbrirTool('mctb')">
+          <div class="banco-card-img"><div class="banco-card-img-placeholder dp-tool-icon">⚙️</div></div>
+          <div class="banco-card-body">
+            <div class="banco-card-name">MCTB — Curvas de Motor</div>
+            <div class="banco-card-meta">Corriente, velocidad, potencia y eficiencia desde CSV</div>
+          </div>
+        </div>
+        <div class="banco-card" onclick="dpAbrirTool('fk')">
+          <div class="banco-card-img"><div class="banco-card-img-placeholder dp-tool-icon">📐</div></div>
+          <div class="banco-card-body">
+            <div class="banco-card-name">F-Konstant</div>
+            <div class="banco-card-meta">Fuerza, travel, velocidad y corriente vs tiempo</div>
+          </div>
+        </div>
+        <div class="banco-card" onclick="dpAbrirTool('sliding')">
+          <div class="banco-card-img"><div class="banco-card-img-placeholder dp-tool-icon">↔️</div></div>
+          <div class="banco-card-body">
+            <div class="banco-card-name">Sliding Door</div>
+            <div class="banco-card-meta">Aceleracion maxima de puertas correderas</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista 2: Herramienta MTB -->
+    <div id="vista-dp-mtb" class="banco-detail">
+      <div class="banco-detail-header">
+        <button class="banco-back-btn" onclick="dpVolverAGrid()">← Data-Processor</button>
+        <div class="banco-detail-title">MTB — Caracterizacion de Motor</div>
+      </div>
+      <div style="font-size:13px;color:var(--sec-2);margin-bottom:20px;max-width:720px;">Sube un export Catman (.xlsx o .xls) del banco MTB. Se calculan las curvas de corriente, rpm, potencia y eficiencia frente a par, y puedes descargar el informe en PDF.</div>
+
+      <div class="upload-area" id="dp-mtb-upload-area" ondragover="dpDragOver(event)" ondragleave="dpDragLeave(event)" ondrop="dpMtbDropFile(event)">
+        <input type="file" id="dp-mtb-file-input" accept=".xlsx,.xls" onchange="dpMtbHandleFile(this.files[0])">
+        <div class="upload-icon">📂</div>
+        <div class="upload-title" id="dp-mtb-upload-title">Arrastra el archivo Catman aqui</div>
+        <div class="upload-sub" id="dp-mtb-upload-sub">o haz clic para seleccionar · .xlsx o .xls</div>
+      </div>
+
+      <div class="form-row" style="margin-top:16px;max-width:480px;align-items:end;">
+        <div class="form-group">
+          <label class="form-label">Voltaje nominal (V)</label>
+          <input class="form-input" id="dp-mtb-voltage" type="number" step="0.1" placeholder="ej: 24">
+        </div>
+        <button class="btn-primary" id="dp-mtb-process-btn" onclick="dpProcessMtb()" disabled style="opacity:0.5;cursor:not-allowed;">Procesar</button>
+      </div>
+
+      <div id="dp-mtb-error" class="preview-warning" style="display:none;margin-top:16px;max-width:720px;"></div>
+
+      <div id="dp-mtb-results" style="display:none;margin-top:28px;">
+        <div class="section-header">
+          <div class="section-title-group">
+            <div class="frame-accent"><div class="fl"></div><div class="fl"></div></div>
+            <span class="section-title">Resultados</span>
+          </div>
+          <div class="section-actions">
+            <button class="btn-success" onclick="dpDownloadMtbPdf()">⬇ Descargar informe PDF</button>
+          </div>
+        </div>
+
+        <div class="kpi-row" id="dp-mtb-kpis"></div>
+
+        <div class="dp-chart-card">
+          <div class="dp-chart-title">Corriente, RPM, Potencia y Eficiencia frente a Par</div>
+          <canvas id="dp-mtb-chart" height="110"></canvas>
+        </div>
+
+        <div class="table-card">
+          <table>
+            <thead><tr><th>Parametro</th><th>Valor</th></tr></thead>
+            <tbody id="dp-mtb-results-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista 3: Herramienta MCTB -->
+    <div id="vista-dp-mctb" class="banco-detail">
+      <div class="banco-detail-header">
+        <button class="banco-back-btn" onclick="dpVolverAGrid()">← Data-Processor</button>
+        <div class="banco-detail-title">MCTB — Curvas de Motor</div>
+      </div>
+      <div style="font-size:13px;color:var(--sec-2);margin-bottom:20px;max-width:720px;">Sube un CSV con columnas Torque1000N, ActualCurrent, CurrentSpeed y ActualVoltage. Se calculan las curvas de corriente, velocidad, potencia y eficiencia frente a par.</div>
+
+      <div class="upload-area" id="dp-mctb-upload-area" ondragover="dpDragOver(event)" ondragleave="dpDragLeave(event)" ondrop="dpMctbDropFile(event)">
+        <input type="file" id="dp-mctb-file-input" accept=".csv" onchange="dpMctbHandleFile(this.files[0])">
+        <div class="upload-icon">📂</div>
+        <div class="upload-title" id="dp-mctb-upload-title">Arrastra el CSV aqui</div>
+        <div class="upload-sub" id="dp-mctb-upload-sub">o haz clic para seleccionar · .csv</div>
+      </div>
+
+      <div class="form-group" style="margin-top:16px;max-width:480px;">
+        <label class="form-label">Voltaje</label>
+        <div style="display:flex;gap:16px;align-items:center;font-size:13px;color:var(--geze-blau);margin:4px 0 8px;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:400;"><input type="radio" name="dp-mctb-voltage-mode" value="csv" checked onchange="dpMctbVoltageModeChange()"> Usar el de la columna del CSV</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:400;"><input type="radio" name="dp-mctb-voltage-mode" value="manual" onchange="dpMctbVoltageModeChange()"> Manual</label>
+        </div>
+        <input class="form-input" id="dp-mctb-voltage-manual" type="number" step="0.1" placeholder="ej: 24" disabled style="max-width:160px;opacity:0.5;">
+      </div>
+
+      <div style="margin-top:12px;">
+        <button class="btn-primary" id="dp-mctb-process-btn" onclick="dpProcessMctb()" disabled style="opacity:0.5;cursor:not-allowed;">Procesar</button>
+      </div>
+
+      <div id="dp-mctb-error" class="preview-warning" style="display:none;margin-top:16px;max-width:720px;"></div>
+
+      <div id="dp-mctb-results" style="display:none;margin-top:28px;">
+        <div class="section-header">
+          <div class="section-title-group">
+            <div class="frame-accent"><div class="fl"></div><div class="fl"></div></div>
+            <span class="section-title">Resultados</span>
+          </div>
+          <div class="section-actions">
+            <button class="btn-success" onclick="dpDownloadMctbPdf()">⬇ Descargar informe PDF</button>
+          </div>
+        </div>
+
+        <div class="kpi-row" id="dp-mctb-kpis"></div>
+
+        <div class="dp-chart-card">
+          <div class="dp-chart-title">Corriente, Velocidad, Potencia y Eficiencia frente a Par</div>
+          <canvas id="dp-mctb-chart" height="110"></canvas>
+        </div>
+
+        <div class="table-card">
+          <table>
+            <thead><tr><th>Parametro</th><th>Valor</th></tr></thead>
+            <tbody id="dp-mctb-results-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista 4: Herramienta Sliding Door -->
+    <div id="vista-dp-sliding" class="banco-detail">
+      <div class="banco-detail-header">
+        <button class="banco-back-btn" onclick="dpVolverAGrid()">← Data-Processor</button>
+        <div class="banco-detail-title">Sliding Door — Aceleracion Maxima</div>
+      </div>
+      <div style="font-size:13px;color:var(--sec-2);margin-bottom:20px;max-width:720px;">Sube uno o varios CSV de ensayos de puertas correderas. Se calcula, por cada archivo, la maxima deceleracion (regresion por ventana deslizante sobre la franja central de 5000 filas).</div>
+
+      <div class="upload-area" id="dp-sliding-upload-area" ondragover="dpDragOver(event)" ondragleave="dpDragLeave(event)" ondrop="dpSlidingDropFile(event)">
+        <input type="file" id="dp-sliding-file-input" accept=".csv" multiple onchange="dpSlidingHandleFiles(this.files)">
+        <div class="upload-icon">📂</div>
+        <div class="upload-title" id="dp-sliding-upload-title">Arrastra uno o varios CSV aqui</div>
+        <div class="upload-sub" id="dp-sliding-upload-sub">o haz clic para seleccionar · .csv (varios permitidos)</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <button class="btn-primary" id="dp-sliding-process-btn" onclick="dpProcessSliding()" disabled style="opacity:0.5;cursor:not-allowed;">Procesar</button>
+      </div>
+
+      <div id="dp-sliding-error" class="preview-warning" style="display:none;margin-top:16px;max-width:720px;"></div>
+
+      <div id="dp-sliding-results" style="display:none;margin-top:28px;">
+        <div class="section-header">
+          <div class="section-title-group">
+            <div class="frame-accent"><div class="fl"></div><div class="fl"></div></div>
+            <span class="section-title">Resultados</span>
+            <span class="section-count" id="dp-sliding-count"></span>
+          </div>
+          <div class="section-actions">
+            <button class="btn-success" onclick="dpDownloadSlidingPdf()">⬇ Descargar informe PDF</button>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <table>
+            <thead><tr><th>Archivo</th><th>Aceleracion Maxima</th><th>Estado</th></tr></thead>
+            <tbody id="dp-sliding-results-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista 5: Herramienta F-Konstant -->
+    <div id="vista-dp-fk" class="banco-detail">
+      <div class="banco-detail-header">
+        <button class="banco-back-btn" onclick="dpVolverAGrid()">← Data-Processor</button>
+        <div class="banco-detail-title">F-Konstant</div>
+      </div>
+      <div style="font-size:13px;color:var(--sec-2);margin-bottom:20px;max-width:720px;">Sube uno o varios TXT de exportacion HBK. Se calculan fuerza, travel, velocidad filtrada y corriente filtrada frente al tiempo. El voltaje nominal se usa para calcular la eficiencia (Fuerza × Velocidad / Voltaje × Corriente).</div>
+
+      <div class="upload-area" id="dp-fk-upload-area" ondragover="dpDragOver(event)" ondragleave="dpDragLeave(event)" ondrop="dpFkDropFile(event)">
+        <input type="file" id="dp-fk-file-input" accept=".txt" multiple onchange="dpFkHandleFiles(this.files)">
+        <div class="upload-icon">📂</div>
+        <div class="upload-title" id="dp-fk-upload-title">Arrastra uno o varios TXT aqui</div>
+        <div class="upload-sub" id="dp-fk-upload-sub">o haz clic para seleccionar · .txt (varios permitidos)</div>
+      </div>
+
+      <div class="form-row" style="margin-top:16px;max-width:480px;align-items:end;">
+        <div class="form-group">
+          <label class="form-label">Voltaje nominal (V)</label>
+          <input class="form-input" id="dp-fk-voltage" type="number" step="0.1" placeholder="ej: 24">
+        </div>
+        <button class="btn-primary" id="dp-fk-process-btn" onclick="dpProcessFk()" disabled style="opacity:0.5;cursor:not-allowed;">Procesar</button>
+      </div>
+
+      <div id="dp-fk-error" class="preview-warning" style="display:none;margin-top:16px;max-width:720px;"></div>
+
+      <div id="dp-fk-results" style="display:none;margin-top:28px;">
+        <div class="section-header">
+          <div class="section-title-group">
+            <div class="frame-accent"><div class="fl"></div><div class="fl"></div></div>
+            <span class="section-title">Resultados</span>
+          </div>
+          <div class="section-actions">
+            <button class="btn-success" onclick="dpDownloadFkPdf()">⬇ Descargar informe PDF</button>
+          </div>
+        </div>
+
+        <div id="dp-fk-file-chips" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;"></div>
+
+        <div class="dp-chart-card">
+          <div class="dp-chart-title" id="dp-fk-chart-title">Fuerza, Travel, Velocidad y Corriente frente a Tiempo</div>
+          <canvas id="dp-fk-chart" height="110"></canvas>
+        </div>
+
+        <div class="table-card" style="margin-top:16px;">
+          <table>
+            <thead><tr><th>Parametro</th><th>Valor</th></tr></thead>
+            <tbody id="dp-fk-stats-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- DIGITAL TOOLS PANEL -->
@@ -1824,6 +2086,9 @@ function showPanel(name) {
   if (name === 'noticias') {
     volverAFeedNoticias();
     renderNoticiasFeed();
+  }
+  if (name === 'dataprocessor') {
+    dpVolverAGrid();
   }
 }
 
@@ -4658,6 +4923,1221 @@ function initNoticias() {
     checkCumpleanos();
     desanclarPreCumpleanosDelDia();
   });
+}
+
+// ===========================================================
+// DATA PROCESSOR — MTB (Caracterizacion de Motor)
+// Puerto a JS de MTBCaharacterization.py (read_motor_file,
+// compute_motor_curves). Todo el calculo corre en el navegador,
+// no hay funcion de Netlify implicada.
+// ===========================================================
+
+var dpMtbState = { file: null, curves: null, motorVoltage: null, chart: null };
+
+var DP_MOTOR_COLS = { current: 1, torque: 5, rpm: 7 };
+var DP_SKIP_ROWS = 38;
+
+function dpNum(v) {
+  if (v === null || v === undefined || v === '') return null;
+  if (typeof v === 'number') return isFinite(v) ? v : null;
+  var n = parseFloat(String(v).replace(',', '.'));
+  return isFinite(n) ? n : null;
+}
+
+function dpLinspace(start, end, count) {
+  if (count <= 1) return [start];
+  var step = (end - start) / (count - 1);
+  var out = new Array(count);
+  for (var i = 0; i < count; i++) out[i] = start + step * i;
+  return out;
+}
+
+function dpClip(v, lo, hi) {
+  if (lo !== null && v < lo) v = lo;
+  if (hi !== null && v > hi) v = hi;
+  return v;
+}
+
+function dpArgmax(arr) {
+  var idx = 0;
+  for (var i = 1; i < arr.length; i++) { if (arr[i] > arr[idx]) idx = i; }
+  return idx;
+}
+
+function dpMechanicalPower(torque, rpm) {
+  return torque * (rpm * 2 * Math.PI / 60);
+}
+
+// Potencia mecanica cuando la velocidad viene en grados/s (MCTB), en vez
+// de rpm (MTB usa dpMechanicalPower).
+function dpComputePowerDegS(torque, speedDegS) {
+  return torque * speedDegS * (Math.PI / 180);
+}
+
+// --- Utilidades compartidas por MCTB / SlidingDoor / FK ---
+
+function dpDecodeUtf8(buf) {
+  var text = new TextDecoder('utf-8').decode(buf);
+  return text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text;
+}
+function dpDecodeLatin1(buf) { return new TextDecoder('iso-8859-1').decode(buf); }
+
+function dpSplitLines(text) {
+  var lines = text.split(/\r\n|\n|\r/);
+  while (lines.length && lines[lines.length - 1] === '') lines.pop();
+  return lines;
+}
+
+// Parsea un numero con un caracter decimal explicito (',' o '.'). A
+// diferencia de dpNum (que asume decimal=','), esta version se usa donde
+// el separador decimal se autodetecta (MCTB) o es fijo por formato (FK).
+function dpNumDec(v, decimalChar) {
+  if (v === undefined || v === null) return null;
+  var s = String(v).trim();
+  if (s === '') return null;
+  if (decimalChar === ',') s = s.replace(',', '.');
+  var n = parseFloat(s);
+  return isFinite(n) ? n : null;
+}
+
+// Puerto de detect_decimal/detect_separator (mctb_curve.py): heuristica
+// sobre las primeras lineas del archivo, no un parseo formal de CSV.
+function dpDetectDecimal(text) {
+  var lines = dpSplitLines(text);
+  for (var i = 0; i < Math.min(5, lines.length); i++) {
+    var line = lines[i].trim();
+    if (line && /\d/.test(line)) return line.indexOf(',') !== -1 ? ',' : '.';
+  }
+  return '.';
+}
+function dpDetectSeparator(text) {
+  var firstLine = dpSplitLines(text)[0] || '';
+  var semis = (firstLine.match(/;/g) || []).length;
+  var commas = (firstLine.match(/,/g) || []).length;
+  return semis > commas ? ';' : ',';
+}
+
+// Interpolacion lineal equivalente a np.interp (clamp fuera de rango).
+// Asume xs ordenado ascendente.
+function dpInterp(x, xs, ys) {
+  var n = xs.length;
+  if (n === 1) return ys[0];
+  if (x <= xs[0]) return ys[0];
+  if (x >= xs[n - 1]) return ys[n - 1];
+  for (var i = 0; i < n - 1; i++) {
+    if (x >= xs[i] && x <= xs[i + 1]) {
+      var t = xs[i + 1] === xs[i] ? 0 : (x - xs[i]) / (xs[i + 1] - xs[i]);
+      return ys[i] + t * (ys[i + 1] - ys[i]);
+    }
+  }
+  return ys[n - 1];
+}
+
+// Media movil centrada equivalente a pandas Series.rolling(window,
+// center=True, min_periods=...).mean(). Con min_periods omitido (=window)
+// exige la ventana completa (NaN en los bordes, como SlidingDoor); con
+// min_periods=1 promedia lo que haya disponible incluso en los bordes
+// (como FK). offset: window par -> mas peso hacia adelante (floor(window/2)
+// adelante, resto atras), igual que pandas.
+function dpRollingMeanCentered(values, window, minPeriods) {
+  var n = values.length;
+  var forward = Math.floor(window / 2);
+  var back = window - 1 - forward;
+  var required = minPeriods || window;
+  var out = new Array(n);
+  for (var i = 0; i < n; i++) {
+    var lo = Math.max(0, i - back), hi = Math.min(n - 1, i + forward);
+    var sum = 0, have = 0;
+    for (var j = lo; j <= hi; j++) {
+      var v = values[j];
+      if (typeof v === 'number' && isFinite(v)) { sum += v; have++; }
+    }
+    out[i] = have >= required ? sum / have : NaN;
+  }
+  return out;
+}
+
+// Pendiente de regresion lineal simple sobre una ventana (formula cerrada
+// cov(x,y)/var(x)), igual que _rolling_slope en SlidingDoor.py.
+function dpWindowSlope(xWindow, yWindow) {
+  var n = xWindow.length;
+  var meanX = 0, meanY = 0;
+  for (var i = 0; i < n; i++) { meanX += xWindow[i]; meanY += yWindow[i]; }
+  meanX /= n; meanY /= n;
+  var num = 0, den = 0;
+  for (i = 0; i < n; i++) {
+    var dx = xWindow[i] - meanX;
+    num += dx * (yWindow[i] - meanY);
+    den += dx * dx;
+  }
+  return den !== 0 ? num / den : NaN;
+}
+
+// Filtro de picos: descarta puntos que se desvian > threshold (relativo)
+// de la media de sus vecinos inmediatos. Primer y ultimo punto se conservan.
+function dpFilterSpikes(values, threshold) {
+  threshold = threshold || 0.40;
+  var n = values.length;
+  var keep = new Array(n).fill(true);
+  for (var i = 1; i < n - 1; i++) {
+    var meanNeighbors = (values[i - 1] + values[i + 1]) / 2;
+    if (Math.abs(meanNeighbors) < 1e-9) { keep[i] = true; continue; }
+    var relError = Math.abs(values[i] - meanNeighbors) / Math.abs(meanNeighbors);
+    keep[i] = relError <= threshold;
+  }
+  return keep;
+}
+
+// Resuelve A*x = b (Gauss con pivoteo parcial). A es n x n, b longitud n.
+function dpSolveLinearSystem(A, b) {
+  var n = b.length;
+  var M = A.map(function(row) { return row.slice(); });
+  var v = b.slice();
+  for (var col = 0; col < n; col++) {
+    var pivot = col;
+    for (var r = col + 1; r < n; r++) { if (Math.abs(M[r][col]) > Math.abs(M[pivot][col])) pivot = r; }
+    if (pivot !== col) {
+      var tmpRow = M[col]; M[col] = M[pivot]; M[pivot] = tmpRow;
+      var tmpV = v[col]; v[col] = v[pivot]; v[pivot] = tmpV;
+    }
+    var pivotVal = M[col][col];
+    if (Math.abs(pivotVal) < 1e-12) continue;
+    for (var r2 = col + 1; r2 < n; r2++) {
+      var factor = M[r2][col] / pivotVal;
+      for (var c2 = col; c2 < n; c2++) { M[r2][c2] -= factor * M[col][c2]; }
+      v[r2] -= factor * v[col];
+    }
+  }
+  var x = new Array(n).fill(0);
+  for (var i = n - 1; i >= 0; i--) {
+    var sum = v[i];
+    for (var j = i + 1; j < n; j++) { sum -= M[i][j] * x[j]; }
+    x[i] = Math.abs(M[i][i]) < 1e-12 ? 0 : sum / M[i][i];
+  }
+  return x;
+}
+
+// Ajuste polinomico ponderado (equivalente a np.polyfit(x,y,degree,w=weights)).
+// Devuelve coeficientes de menor a mayor grado: p(x) = c[0] + c[1]*x + c[2]*x^2 ...
+function dpWeightedPolyfit(x, y, degree, weights) {
+  var n = degree + 1;
+  var A = [], b = [];
+  for (var j = 0; j < n; j++) { A.push(new Array(n).fill(0)); b.push(0); }
+  for (var i = 0; i < x.length; i++) {
+    var w = weights[i], xi = x[i], yi = y[i];
+    var pw = [1];
+    for (var k = 1; k < 2 * n - 1; k++) pw.push(pw[k - 1] * xi);
+    for (j = 0; j < n; j++) {
+      for (var k2 = 0; k2 < n; k2++) A[j][k2] += w * pw[j + k2];
+      b[j] += w * pw[j] * yi;
+    }
+  }
+  return dpSolveLinearSystem(A, b);
+}
+
+function dpEvalPoly(coeffs, x) {
+  var result = 0, xp = 1;
+  for (var i = 0; i < coeffs.length; i++) { result += coeffs[i] * xp; xp *= x; }
+  return result;
+}
+
+function dpExtractVoltageFromFilename(name) {
+  var matches = name.match(/\d+V/gi);
+  if (!matches || !matches.length) return null;
+  var num = parseFloat(matches[matches.length - 1].replace(/V/gi, ''));
+  return isFinite(num) ? num : null;
+}
+
+// Lee el export Catman: skiprows=38, sin cabecera, columnas por posicion fija.
+function dpReadExcelRows(arrayBuffer) {
+  var wb = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
+  var ws = wb.Sheets[wb.SheetNames[0]];
+  return XLSX.utils.sheet_to_json(ws, { header: 1, range: DP_SKIP_ROWS, defval: null });
+}
+
+function dpParseMotorRows(rows) {
+  var torque = [], current = [], rpm = [];
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    var t = dpNum(row[DP_MOTOR_COLS.torque]), c = dpNum(row[DP_MOTOR_COLS.current]), r = dpNum(row[DP_MOTOR_COLS.rpm]);
+    if (t === null || c === null || r === null) continue;
+    torque.push(t); current.push(c); rpm.push(r);
+  }
+
+  // Cortar en cuanto rpm llega a cero (o negativo)
+  var cutIdx = -1;
+  for (i = 0; i < rpm.length; i++) { if (rpm[i] <= 0) { cutIdx = i; break; } }
+  if (cutIdx >= 0) { torque = torque.slice(0, cutIdx); current = current.slice(0, cutIdx); rpm = rpm.slice(0, cutIdx); }
+
+  // Valores absolutos + mA -> A
+  for (i = 0; i < torque.length; i++) {
+    torque[i] = Math.abs(torque[i]);
+    current[i] = Math.abs(current[i]) / 1000;
+    rpm[i] = Math.abs(rpm[i]);
+  }
+
+  // Ordenar por par
+  var order = torque.map(function(_, idx) { return idx; });
+  order.sort(function(a, b) { return torque[a] - torque[b]; });
+  torque = order.map(function(idx) { return torque[idx]; });
+  current = order.map(function(idx) { return current[idx]; });
+  rpm = order.map(function(idx) { return rpm[idx]; });
+
+  // Filtrar picos en corriente y rpm
+  var maskCurrent = dpFilterSpikes(current);
+  var maskRpm = dpFilterSpikes(rpm);
+  var fTorque = [], fCurrent = [], fRpm = [];
+  for (i = 0; i < torque.length; i++) {
+    if (maskCurrent[i] && maskRpm[i]) { fTorque.push(torque[i]); fCurrent.push(current[i]); fRpm.push(rpm[i]); }
+  }
+
+  return { torque: fTorque, current: fCurrent, rpm: fRpm };
+}
+
+function dpComputeMotorCurves(torque, current, rpm, motorVoltage) {
+  var weights = torque.map(function(t) { return 1 / (t + 0.2); });
+  var currentPoly = dpWeightedPolyfit(torque, current, 2, weights);
+  var rpmPoly = dpWeightedPolyfit(torque, rpm, 1, weights);
+
+  var torqueGrid = dpLinspace(0, Math.max.apply(null, torque), 400);
+  var currentCurve = torqueGrid.map(function(t) { return dpClip(dpEvalPoly(currentPoly, t), 0, null); });
+  var rpmCurve = torqueGrid.map(function(t) { return dpClip(dpEvalPoly(rpmPoly, t), 0, null); });
+  var powerMech = torqueGrid.map(function(t, i) { return dpClip(dpMechanicalPower(t, rpmCurve[i]), 0, null); });
+  var powerElec = currentCurve.map(function(c) { return motorVoltage * c; });
+  var efficiency = powerElec.map(function(pe, i) { return pe > 0 ? dpClip(powerMech[i] / pe, 0, 1) : 0; });
+  var idx = dpArgmax(efficiency);
+
+  return { torque: torque, current: current, rpm: rpm, torqueGrid: torqueGrid, currentCurve: currentCurve, rpmCurve: rpmCurve, powerMech: powerMech, efficiency: efficiency, idx: idx };
+}
+
+// --- Navegacion / UI ---
+
+var DP_TOOL_VIEWS = ['mtb', 'mctb', 'sliding', 'fk'];
+
+function dpAbrirTool(name) {
+  if (DP_TOOL_VIEWS.indexOf(name) === -1) return;
+  document.getElementById('vista-dp-grid').style.display = 'none';
+  document.getElementById('vista-dp-' + name).classList.add('active');
+}
+
+function dpVolverAGrid() {
+  DP_TOOL_VIEWS.forEach(function(name) { document.getElementById('vista-dp-' + name).classList.remove('active'); });
+  document.getElementById('vista-dp-grid').style.display = '';
+}
+
+// Drag&drop generico: se apoya en e.currentTarget, asi que sirve para
+// cualquier .upload-area sin depender de un id fijo.
+function dpDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function dpDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+
+function dpShowError(id, msg) {
+  var el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = '';
+}
+function dpHideError(id) { document.getElementById(id).style.display = 'none'; }
+
+function dpMtbDropFile(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  var file = e.dataTransfer.files[0];
+  if (file) dpMtbHandleFile(file);
+}
+
+function dpMtbHandleFile(file) {
+  if (!file) return;
+  dpMtbState.file = file;
+  dpMtbState.curves = null;
+
+  document.getElementById('dp-mtb-upload-title').textContent = file.name;
+  document.getElementById('dp-mtb-upload-sub').textContent = 'Archivo listo · pulsa Procesar';
+  document.getElementById('dp-mtb-upload-area').style.borderColor = 'var(--success)';
+
+  var voltage = dpExtractVoltageFromFilename(file.name);
+  if (voltage !== null) document.getElementById('dp-mtb-voltage').value = voltage;
+
+  dpHideError('dp-mtb-error');
+  document.getElementById('dp-mtb-results').style.display = 'none';
+
+  var btn = document.getElementById('dp-mtb-process-btn');
+  btn.disabled = false;
+  btn.style.opacity = '';
+  btn.style.cursor = '';
+}
+
+function dpProcessMtb() {
+  if (!dpMtbState.file) { dpShowError('dp-mtb-error', 'Selecciona primero un archivo.'); return; }
+  var voltage = parseFloat(document.getElementById('dp-mtb-voltage').value);
+  if (!isFinite(voltage) || voltage <= 0) { dpShowError('dp-mtb-error', 'Introduce un voltaje nominal valido.'); return; }
+  dpHideError('dp-mtb-error');
+
+  var reader = new FileReader();
+  reader.onerror = function() { dpShowError('dp-mtb-error', 'No se pudo leer el archivo.'); };
+  reader.onload = function(e) {
+    try {
+      var rows = dpReadExcelRows(e.target.result);
+      var parsed = dpParseMotorRows(rows);
+      if (parsed.torque.length < 3) throw new Error('No hay datos validos suficientes en el archivo.');
+
+      var curves = dpComputeMotorCurves(parsed.torque, parsed.current, parsed.rpm, voltage);
+      dpMtbState.curves = curves;
+      dpMtbState.motorVoltage = voltage;
+      dpRenderResults(voltage, curves);
+    } catch (err) {
+      dpShowError('dp-mtb-error', 'Error procesando el archivo: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(dpMtbState.file);
+}
+
+// --- Graficas y tabla de resultados ---
+
+// Convierte a puntos {x,y} para Chart.js. Valores no finitos se mapean a
+// null para que Chart.js dibuje un hueco en vez de romper la escala
+// (relevante para FK, donde pd.to_numeric(errors='coerce') deja NaN sin
+// eliminar filas).
+function dpToPoints(xs, ys) {
+  return xs.map(function(x, i) {
+    var yv = ys[i];
+    var yOk = typeof yv === 'number' && isFinite(yv);
+    return { x: (typeof x === 'number' && isFinite(x)) ? x : null, y: yOk ? yv : null };
+  });
+}
+
+// Un unico Chart.js con 4 ejes Y independientes (corriente, rpm, potencia,
+// eficiencia) sobre el mismo eje X (par) — equivalente a los 4 "spines"
+// desplazados de la figura matplotlib original.
+function dpRenderChart(curves) {
+  var ctx = document.getElementById('dp-mtb-chart').getContext('2d');
+  if (dpMtbState.chart) dpMtbState.chart.destroy();
+  var maxEffPoint = { x: curves.torqueGrid[curves.idx], y: curves.efficiency[curves.idx] * 100 };
+
+  dpMtbState.chart = new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [
+        { type: 'scatter', label: 'Corriente medida (A)', data: dpToPoints(curves.torque, curves.current), backgroundColor: 'rgba(0,110,225,0.28)', pointRadius: 2.5, yAxisID: 'y' },
+        { type: 'line', label: 'Corriente ajustada (A)', data: dpToPoints(curves.torqueGrid, curves.currentCurve), borderColor: '#006ee1', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, yAxisID: 'y' },
+        { type: 'scatter', label: 'RPM medida', data: dpToPoints(curves.torque, curves.rpm), backgroundColor: 'rgba(26,122,74,0.28)', pointRadius: 2.5, yAxisID: 'y1' },
+        { type: 'line', label: 'RPM ajustada', data: dpToPoints(curves.torqueGrid, curves.rpmCurve), borderColor: '#1a7a4a', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, yAxisID: 'y1' },
+        { type: 'line', label: 'Potencia (W)', data: dpToPoints(curves.torqueGrid, curves.powerMech), borderColor: '#b8860b', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, yAxisID: 'y2' },
+        { type: 'line', label: 'Eficiencia (%)', data: dpToPoints(curves.torqueGrid, curves.efficiency.map(function(e) { return e * 100; })), borderColor: '#7b3fa0', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, yAxisID: 'y3' },
+        { type: 'scatter', label: 'Eficiencia maxima', data: [maxEffPoint], backgroundColor: '#c0392b', pointRadius: 6, yAxisID: 'y3' }
+      ]
+    },
+    options: {
+      responsive: true,
+      animation: false,
+      interaction: { mode: 'nearest', intersect: false },
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } },
+      scales: {
+        x: { type: 'linear', title: { display: true, text: 'Par [Nm]' } },
+        y: { type: 'linear', position: 'left', title: { display: true, text: 'Corriente [A]', color: '#006ee1' }, ticks: { color: '#006ee1' } },
+        y1: { type: 'linear', position: 'right', title: { display: true, text: 'RPM', color: '#1a7a4a' }, ticks: { color: '#1a7a4a' }, grid: { drawOnChartArea: false } },
+        y2: { type: 'linear', position: 'right', title: { display: true, text: 'Potencia [W]', color: '#b8860b' }, ticks: { color: '#b8860b' }, grid: { drawOnChartArea: false } },
+        y3: { type: 'linear', position: 'right', title: { display: true, text: 'Eficiencia [%]', color: '#7b3fa0' }, ticks: { color: '#7b3fa0' }, grid: { drawOnChartArea: false } }
+      }
+    }
+  });
+}
+
+function dpResultRows(motorVoltage, curves) {
+  return [
+    ['Rated Voltage', motorVoltage.toFixed(1) + ' V'],
+    ['No Load Speed', curves.rpmCurve[0].toFixed(0) + ' rpm'],
+    ['No Load Current', curves.currentCurve[0].toFixed(3) + ' A'],
+    ['Max Efficiency', (curves.efficiency[curves.idx] * 100).toFixed(1) + ' %'],
+    ['Speed at Max Efficiency', curves.rpmCurve[curves.idx].toFixed(0) + ' rpm'],
+    ['Torque at Max Efficiency', curves.torqueGrid[curves.idx].toFixed(3) + ' Nm']
+  ];
+}
+
+function dpRenderResults(motorVoltage, curves) {
+  var rows = dpResultRows(motorVoltage, curves);
+
+  var kpiHtml =
+    '<div class="kpi-card"><div class="kpi-label">Voltaje Nominal</div><div class="kpi-value">' + motorVoltage.toFixed(1) + '</div><div class="kpi-sub">V</div></div>' +
+    '<div class="kpi-card accent"><div class="kpi-label">Velocidad en Vacio</div><div class="kpi-value">' + curves.rpmCurve[0].toFixed(0) + '</div><div class="kpi-sub">rpm</div></div>' +
+    '<div class="kpi-card yellow"><div class="kpi-label">Corriente en Vacio</div><div class="kpi-value">' + curves.currentCurve[0].toFixed(3) + '</div><div class="kpi-sub">A</div></div>' +
+    '<div class="kpi-card"><div class="kpi-label">Eficiencia Maxima</div><div class="kpi-value">' + (curves.efficiency[curves.idx] * 100).toFixed(1) + '</div><div class="kpi-sub">% · a ' + curves.torqueGrid[curves.idx].toFixed(2) + ' Nm</div></div>';
+  document.getElementById('dp-mtb-kpis').innerHTML = kpiHtml;
+
+  document.getElementById('dp-mtb-results-table').innerHTML = rows.map(function(r) {
+    return '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td></tr>';
+  }).join('');
+
+  // Mostrar el contenedor antes de crear los charts: Chart.js necesita que el
+  // canvas ya tenga tamano de layout (con display:none mediria 0x0).
+  document.getElementById('dp-mtb-results').style.display = '';
+
+  dpRenderChart(curves);
+}
+
+// --- Informe PDF (descarga directa en el navegador, sin backend) ---
+
+function dpDownloadMtbPdf() {
+  if (!dpMtbState.curves) { dpShowError('dp-mtb-error', 'Procesa un archivo antes de descargar el informe.'); return; }
+
+  var jsPDFCtor = window.jspdf && window.jspdf.jsPDF;
+  if (!jsPDFCtor) { dpShowError('dp-mtb-error', 'No se pudo cargar el generador de PDF.'); return; }
+
+  var curves = dpMtbState.curves;
+  var motorVoltage = dpMtbState.motorVoltage;
+  var fileName = dpMtbState.file ? dpMtbState.file.name.replace(/\.[^.]+$/, '') : 'MTB_Motor_Report';
+
+  var doc = new jsPDFCtor({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  var pageWidth = doc.internal.pageSize.getWidth();
+  var margin = 14;
+  var y = 16;
+
+  var logoImg = document.querySelector('footer img');
+  if (logoImg && logoImg.src) {
+    try { doc.addImage(logoImg.src, 'PNG', margin, y - 6, 26, 7); } catch (e) {}
+  }
+
+  doc.setFontSize(15);
+  doc.setTextColor(0, 35, 100);
+  doc.text('Informe MTB — Caracterizacion de Motor', pageWidth / 2, y, { align: 'center' });
+  y += 6;
+  doc.setFontSize(10);
+  doc.setTextColor(90, 90, 90);
+  doc.text(fileName, pageWidth / 2, y, { align: 'center' });
+  y += 10;
+
+  var imgWidth = pageWidth - margin * 2;
+  var chartCanvas = document.getElementById('dp-mtb-chart');
+  if (chartCanvas && chartCanvas.width) {
+    var imgData = chartCanvas.toDataURL('image/png', 1.0);
+    var h = imgWidth * (chartCanvas.height / chartCanvas.width);
+    if (y + h > 270) { doc.addPage(); y = 16; }
+    doc.addImage(imgData, 'PNG', margin, y, imgWidth, h);
+    y += h + 8;
+  }
+
+  var rows = dpResultRows(motorVoltage, curves);
+  if (y > 250) { doc.addPage(); y = 16; }
+  doc.autoTable({
+    startY: y,
+    head: [['Parametro', 'Valor']],
+    body: rows,
+    theme: 'grid',
+    headStyles: { fillColor: [0, 35, 100], textColor: 255, fontSize: 10 },
+    bodyStyles: { fontSize: 10 },
+    margin: { left: margin, right: margin }
+  });
+
+  doc.setFontSize(8);
+  doc.setTextColor(140, 140, 140);
+  doc.text('Generado: ' + new Date().toLocaleString('es-ES') + ' · GEZE StoxAI Data-Processor', pageWidth / 2, 290, { align: 'center' });
+
+  doc.save(fileName + '_Motor_Report.pdf');
+}
+
+// ===========================================================
+// DATA PROCESSOR — MCTB (Curvas de Motor)
+// Puerto de mctb_curve.py. Estructuralmente muy parecido a MTB, pero con
+// diferencias de comportamiento deliberadas respecto a MTBCaharacterization.py
+// que se respetan tal cual el script original:
+//  - Sin ningun clip: ni current_fit/speed_fit (>=0) ni la eficiencia (0..1)
+//    se recortan aqui, a diferencia de MTB.
+//  - Potencia con velocidad en grados/s (dpComputePowerDegS), no rpm.
+//  - torque_grid de 200 puntos (MTB usa 400).
+//  - El voltaje no sale del nombre de archivo: se interpola desde la
+//    columna ActualVoltage del CSV, o se introduce a mano.
+//  - El script de referencia no genera PDF (solo anota el punto de max
+//    eficiencia en el plot); la tabla/PDF aqui es una adicion siguiendo
+//    el mismo patron que MTB, no algo que exista en mctb_curve.py.
+// ===========================================================
+
+var dpMctbState = { file: null, curves: null, voltageMode: 'csv', manualVoltage: null, chart: null };
+
+var DP_MCTB_REQUIRED_COLS = ['Torque1000N', 'ActualCurrent', 'CurrentSpeed', 'ActualVoltage'];
+
+function dpParseMctbCsv(text) {
+  var sepChar = dpDetectSeparator(text);
+  var decimalChar = dpDetectDecimal(text);
+  var lines = dpSplitLines(text);
+  if (lines.length < 2) throw new Error('Archivo sin datos.');
+
+  var header = lines[0].split(sepChar).map(function(h) { return h.trim(); });
+  var colIdx = {};
+  DP_MCTB_REQUIRED_COLS.forEach(function(name) {
+    var idx = header.indexOf(name);
+    if (idx === -1) throw new Error('Falta la columna ' + name + ' en el CSV. Columnas disponibles: ' + header.join(', '));
+    colIdx[name] = idx;
+  });
+
+  var torque = [], current = [], speed = [], voltage = [];
+  for (var i = 1; i < lines.length; i++) {
+    var cols = lines[i].split(sepChar);
+    var t = dpNumDec(cols[colIdx['Torque1000N']], decimalChar);
+    var c = dpNumDec(cols[colIdx['ActualCurrent']], decimalChar);
+    var s = dpNumDec(cols[colIdx['CurrentSpeed']], decimalChar);
+    var v = dpNumDec(cols[colIdx['ActualVoltage']], decimalChar);
+    if (t === null || c === null || s === null || v === null) continue;
+    torque.push(Math.abs(t)); current.push(c); speed.push(Math.abs(s)); voltage.push(v);
+  }
+
+  // Ordenar por par manteniendo current/speed/voltage emparejados
+  var order = torque.map(function(_, idx) { return idx; });
+  order.sort(function(a, b) { return torque[a] - torque[b]; });
+  torque = order.map(function(idx) { return torque[idx]; });
+  current = order.map(function(idx) { return current[idx]; });
+  speed = order.map(function(idx) { return speed[idx]; });
+  voltage = order.map(function(idx) { return voltage[idx]; });
+
+  var maskCurrent = dpFilterSpikes(current);
+  var maskSpeed = dpFilterSpikes(speed);
+  var fTorque = [], fCurrent = [], fSpeed = [], fVoltage = [];
+  for (i = 0; i < torque.length; i++) {
+    if (maskCurrent[i] && maskSpeed[i]) { fTorque.push(torque[i]); fCurrent.push(current[i]); fSpeed.push(speed[i]); fVoltage.push(voltage[i]); }
+  }
+
+  return { torque: fTorque, current: fCurrent, speed: fSpeed, voltage: fVoltage };
+}
+
+function dpComputeMctbCurves(torque, current, speed, voltage, voltageMode, manualVoltage) {
+  var weights = torque.map(function(t) { return 1 / (t + 0.2); });
+  var currentPoly = dpWeightedPolyfit(torque, current, 2, weights);
+  var speedPoly = dpWeightedPolyfit(torque, speed, 1, weights);
+
+  var torqueGrid = dpLinspace(0, Math.max.apply(null, torque), 200);
+  var currentFit = torqueGrid.map(function(t) { return dpEvalPoly(currentPoly, t); });
+  var speedFit = torqueGrid.map(function(t) { return dpEvalPoly(speedPoly, t); });
+
+  var voltageFit = voltageMode === 'csv'
+    ? torqueGrid.map(function(t) { return dpInterp(t, torque, voltage); })
+    : torqueGrid.map(function() { return manualVoltage; });
+
+  var powerFit = torqueGrid.map(function(t, i) { return dpComputePowerDegS(t, speedFit[i]); });
+  var electricalPower = currentFit.map(function(c, i) { return voltageFit[i] * c; });
+  var efficiencyFit = electricalPower.map(function(pe, i) { return Math.abs(pe) > 1e-6 ? powerFit[i] / pe : 0; });
+  var idx = dpArgmax(efficiencyFit);
+
+  return { torque: torque, current: current, speed: speed, torqueGrid: torqueGrid, currentFit: currentFit, speedFit: speedFit, powerFit: powerFit, efficiencyFit: efficiencyFit, idx: idx };
+}
+
+function dpMctbVoltageModeChange() {
+  var mode = document.querySelector('input[name="dp-mctb-voltage-mode"]:checked').value;
+  var input = document.getElementById('dp-mctb-voltage-manual');
+  input.disabled = mode !== 'manual';
+  input.style.opacity = mode === 'manual' ? '' : '0.5';
+}
+
+function dpMctbDropFile(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  var file = e.dataTransfer.files[0];
+  if (file) dpMctbHandleFile(file);
+}
+
+function dpMctbHandleFile(file) {
+  if (!file) return;
+  dpMctbState.file = file;
+  dpMctbState.curves = null;
+
+  document.getElementById('dp-mctb-upload-title').textContent = file.name;
+  document.getElementById('dp-mctb-upload-sub').textContent = 'Archivo listo · pulsa Procesar';
+  document.getElementById('dp-mctb-upload-area').style.borderColor = 'var(--success)';
+
+  dpHideError('dp-mctb-error');
+  document.getElementById('dp-mctb-results').style.display = 'none';
+
+  var btn = document.getElementById('dp-mctb-process-btn');
+  btn.disabled = false;
+  btn.style.opacity = '';
+  btn.style.cursor = '';
+}
+
+function dpProcessMctb() {
+  if (!dpMctbState.file) { dpShowError('dp-mctb-error', 'Selecciona primero un archivo.'); return; }
+  var mode = document.querySelector('input[name="dp-mctb-voltage-mode"]:checked').value;
+  var manualVoltage = null;
+  if (mode === 'manual') {
+    manualVoltage = parseFloat(document.getElementById('dp-mctb-voltage-manual').value);
+    if (!isFinite(manualVoltage) || manualVoltage <= 0) { dpShowError('dp-mctb-error', 'Introduce un voltaje manual valido.'); return; }
+  }
+  dpHideError('dp-mctb-error');
+
+  var reader = new FileReader();
+  reader.onerror = function() { dpShowError('dp-mctb-error', 'No se pudo leer el archivo.'); };
+  reader.onload = function(e) {
+    try {
+      var text = dpDecodeUtf8(e.target.result);
+      var parsed = dpParseMctbCsv(text);
+      if (parsed.torque.length < 3) throw new Error('No hay datos validos suficientes en el archivo.');
+
+      var curves = dpComputeMctbCurves(parsed.torque, parsed.current, parsed.speed, parsed.voltage, mode, manualVoltage);
+      dpMctbState.curves = curves;
+      dpMctbState.voltageMode = mode;
+      dpMctbState.manualVoltage = manualVoltage;
+      dpRenderMctbResults(curves, mode, manualVoltage);
+    } catch (err) {
+      dpShowError('dp-mctb-error', 'Error procesando el archivo: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(dpMctbState.file);
+}
+
+function dpMctbResultRows(curves, mode, manualVoltage) {
+  return [
+    ['No Load Current', curves.currentFit[0].toFixed(3) + ' A'],
+    ['No Load Speed', curves.speedFit[0].toFixed(1) + ' deg/s'],
+    ['Max Efficiency', (curves.efficiencyFit[curves.idx] * 100).toFixed(1) + ' %'],
+    ['Speed at Max Efficiency', curves.speedFit[curves.idx].toFixed(1) + ' deg/s'],
+    ['Torque at Max Efficiency', curves.torqueGrid[curves.idx].toFixed(3) + ' Nm'],
+    ['Voltage Source', mode === 'csv' ? 'CSV (interpolado)' : manualVoltage.toFixed(1) + ' V (manual)']
+  ];
+}
+
+function dpRenderMctbResults(curves, mode, manualVoltage) {
+  var rows = dpMctbResultRows(curves, mode, manualVoltage);
+
+  var kpiHtml =
+    '<div class="kpi-card"><div class="kpi-label">Corriente en Vacio</div><div class="kpi-value">' + curves.currentFit[0].toFixed(3) + '</div><div class="kpi-sub">A</div></div>' +
+    '<div class="kpi-card accent"><div class="kpi-label">Velocidad en Vacio</div><div class="kpi-value">' + curves.speedFit[0].toFixed(0) + '</div><div class="kpi-sub">deg/s</div></div>' +
+    '<div class="kpi-card yellow"><div class="kpi-label">Eficiencia Maxima</div><div class="kpi-value">' + (curves.efficiencyFit[curves.idx] * 100).toFixed(1) + '</div><div class="kpi-sub">% · a ' + curves.torqueGrid[curves.idx].toFixed(2) + ' Nm</div></div>' +
+    '<div class="kpi-card"><div class="kpi-label">Fuente de Voltaje</div><div class="kpi-value" style="font-size:16px;">' + (mode === 'csv' ? 'CSV' : manualVoltage.toFixed(1) + ' V') + '</div><div class="kpi-sub">' + (mode === 'csv' ? 'interpolado' : 'manual') + '</div></div>';
+  document.getElementById('dp-mctb-kpis').innerHTML = kpiHtml;
+
+  document.getElementById('dp-mctb-results-table').innerHTML = rows.map(function(r) {
+    return '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td></tr>';
+  }).join('');
+
+  document.getElementById('dp-mctb-results').style.display = '';
+  dpRenderMctbChart(curves);
+}
+
+function dpRenderMctbChart(curves) {
+  var ctx = document.getElementById('dp-mctb-chart').getContext('2d');
+  if (dpMctbState.chart) dpMctbState.chart.destroy();
+  var maxEffPoint = { x: curves.torqueGrid[curves.idx], y: curves.efficiencyFit[curves.idx] * 100 };
+
+  dpMctbState.chart = new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [
+        { type: 'scatter', label: 'Corriente medida (A)', data: dpToPoints(curves.torque, curves.current), backgroundColor: 'rgba(0,110,225,0.28)', pointRadius: 2.5, yAxisID: 'y' },
+        { type: 'line', label: 'Corriente ajustada (A)', data: dpToPoints(curves.torqueGrid, curves.currentFit), borderColor: '#006ee1', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, yAxisID: 'y' },
+        { type: 'scatter', label: 'Velocidad medida', data: dpToPoints(curves.torque, curves.speed), backgroundColor: 'rgba(26,122,74,0.28)', pointRadius: 2.5, yAxisID: 'y1' },
+        { type: 'line', label: 'Velocidad ajustada', data: dpToPoints(curves.torqueGrid, curves.speedFit), borderColor: '#1a7a4a', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, yAxisID: 'y1' },
+        { type: 'line', label: 'Potencia (W)', data: dpToPoints(curves.torqueGrid, curves.powerFit), borderColor: '#b8860b', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, yAxisID: 'y2' },
+        { type: 'line', label: 'Eficiencia (%)', data: dpToPoints(curves.torqueGrid, curves.efficiencyFit.map(function(e) { return e * 100; })), borderColor: '#7b3fa0', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, yAxisID: 'y3' },
+        { type: 'scatter', label: 'Eficiencia maxima', data: [maxEffPoint], backgroundColor: '#c0392b', pointRadius: 6, yAxisID: 'y3' }
+      ]
+    },
+    options: {
+      responsive: true,
+      animation: false,
+      interaction: { mode: 'nearest', intersect: false },
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } },
+      scales: {
+        x: { type: 'linear', title: { display: true, text: 'Par [Nm]' } },
+        y: { type: 'linear', position: 'left', title: { display: true, text: 'Corriente [A]', color: '#006ee1' }, ticks: { color: '#006ee1' } },
+        y1: { type: 'linear', position: 'right', title: { display: true, text: 'Velocidad [deg/s]', color: '#1a7a4a' }, ticks: { color: '#1a7a4a' }, grid: { drawOnChartArea: false } },
+        y2: { type: 'linear', position: 'right', title: { display: true, text: 'Potencia [W]', color: '#b8860b' }, ticks: { color: '#b8860b' }, grid: { drawOnChartArea: false } },
+        y3: { type: 'linear', position: 'right', title: { display: true, text: 'Eficiencia [%]', color: '#7b3fa0' }, ticks: { color: '#7b3fa0' }, grid: { drawOnChartArea: false } }
+      }
+    }
+  });
+}
+
+function dpDownloadMctbPdf() {
+  if (!dpMctbState.curves) { dpShowError('dp-mctb-error', 'Procesa un archivo antes de descargar el informe.'); return; }
+  var jsPDFCtor = window.jspdf && window.jspdf.jsPDF;
+  if (!jsPDFCtor) { dpShowError('dp-mctb-error', 'No se pudo cargar el generador de PDF.'); return; }
+
+  var curves = dpMctbState.curves;
+  var fileName = dpMctbState.file ? dpMctbState.file.name.replace(/\.[^.]+$/, '') : 'MCTB_Motor_Report';
+
+  var doc = new jsPDFCtor({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  var pageWidth = doc.internal.pageSize.getWidth();
+  var margin = 14;
+  var y = 16;
+
+  var logoImg = document.querySelector('footer img');
+  if (logoImg && logoImg.src) { try { doc.addImage(logoImg.src, 'PNG', margin, y - 6, 26, 7); } catch (e) {} }
+
+  doc.setFontSize(15);
+  doc.setTextColor(0, 35, 100);
+  doc.text('Informe MCTB — Curvas de Motor', pageWidth / 2, y, { align: 'center' });
+  y += 6;
+  doc.setFontSize(10);
+  doc.setTextColor(90, 90, 90);
+  doc.text(fileName, pageWidth / 2, y, { align: 'center' });
+  y += 10;
+
+  var imgWidth = pageWidth - margin * 2;
+  var chartCanvas = document.getElementById('dp-mctb-chart');
+  if (chartCanvas && chartCanvas.width) {
+    var imgData = chartCanvas.toDataURL('image/png', 1.0);
+    var h = imgWidth * (chartCanvas.height / chartCanvas.width);
+    if (y + h > 270) { doc.addPage(); y = 16; }
+    doc.addImage(imgData, 'PNG', margin, y, imgWidth, h);
+    y += h + 8;
+  }
+
+  var rows = dpMctbResultRows(curves, dpMctbState.voltageMode, dpMctbState.manualVoltage);
+  if (y > 250) { doc.addPage(); y = 16; }
+  doc.autoTable({
+    startY: y,
+    head: [['Parametro', 'Valor']],
+    body: rows,
+    theme: 'grid',
+    headStyles: { fillColor: [0, 35, 100], textColor: 255, fontSize: 10 },
+    bodyStyles: { fontSize: 10 },
+    margin: { left: margin, right: margin }
+  });
+
+  doc.setFontSize(8);
+  doc.setTextColor(140, 140, 140);
+  doc.text('Generado: ' + new Date().toLocaleString('es-ES') + ' · GEZE StoxAI Data-Processor', pageWidth / 2, 290, { align: 'center' });
+
+  doc.save(fileName + '_MCTB_Report.pdf');
+}
+
+// ===========================================================
+// DATA PROCESSOR — SLIDING DOOR (Aceleracion Maxima)
+// Puerto de SlidingDoor.py: regresion por ventana deslizante vectorizada
+// (formula cerrada cov/var) sobre la franja central de 5000 filas de cada
+// CSV. Procesa varios archivos y muestra una tabla resumen equivalente al
+// CSV que generaba run_batch(); el PDF es solo tabla (el script original
+// tampoco genera curva/plot para esta herramienta).
+// ===========================================================
+
+var dpSlidingState = { files: [], results: [] };
+
+var DP_SLIDING_WINDOW = 10;
+var DP_SLIDING_SMOOTH = 10;
+var DP_SLIDING_CENTRAL_ROWS = 5000;
+
+function dpSlidingProcessText(text) {
+  var lines = dpSplitLines(text);
+  var totalLines = lines.length - 1; // -1: cabecera
+  if (totalLines < DP_SLIDING_CENTRAL_ROWS) throw new Error('Not enough rows (' + totalLines + ')');
+
+  var startRow = Math.floor((totalLines - DP_SLIDING_CENTRAL_ROWS) / 2);
+  var dataStart = 1 + startRow; // saltar cabecera + startRow filas de datos
+  var dataLines = lines.slice(dataStart, dataStart + DP_SLIDING_CENTRAL_ROWS);
+  if (dataLines.length < DP_SLIDING_WINDOW) throw new Error('Not enough data');
+
+  // Columnas crudas del CSV (0-indexed): y = col 6, x = col 12 (col 7 no se usa, igual que en el script original)
+  var yRaw = [], xRaw = [];
+  for (var i = 0; i < dataLines.length; i++) {
+    var cols = dataLines[i].split(';');
+    yRaw.push(cols[6]);
+    xRaw.push(cols[12]);
+  }
+
+  var y = yRaw.map(function(v) { var n = dpNumDec(v, ','); return n === null ? NaN : n; });
+
+  // x: numerico si se puede parsear; si no, se trata como fecha/hora y se
+  // usan segundos transcurridos desde el primer valor (igual que el
+  // fallback a pd.to_datetime del script original).
+  var firstNumeric = dpNumDec(xRaw[0], ',');
+  var x;
+  if (firstNumeric !== null) {
+    x = xRaw.map(function(v) { var n = dpNumDec(v, ','); return n === null ? NaN : n; });
+  } else {
+    var times = xRaw.map(function(v) { var d = new Date(v); return isNaN(d.getTime()) ? NaN : d.getTime(); });
+    var validTimes = times.filter(function(t) { return isFinite(t); });
+    var minT = validTimes.length ? Math.min.apply(null, validTimes) : 0;
+    x = times.map(function(t) { return isFinite(t) ? (t - minT) / 1000 : NaN; });
+  }
+
+  var ySmoothed = dpRollingMeanCentered(y, DP_SLIDING_SMOOTH); // min_periods = window (por defecto): NaN en los bordes
+
+  var negativeSlopes = [];
+  var totalWindows = ySmoothed.length - DP_SLIDING_WINDOW + 1;
+  for (var w = 0; w < totalWindows; w++) {
+    var yWindow = ySmoothed.slice(w, w + DP_SLIDING_WINDOW);
+    var xWindow = x.slice(w, w + DP_SLIDING_WINDOW);
+
+    var hasInvalid = false, allNegative = true;
+    for (var k = 0; k < yWindow.length; k++) {
+      if (!isFinite(yWindow[k]) || !isFinite(xWindow[k])) { hasInvalid = true; break; }
+      if (!(yWindow[k] < 0)) allNegative = false;
+    }
+    if (hasInvalid) continue;
+
+    if (allNegative) {
+      var slope = dpWindowSlope(xWindow, yWindow);
+      if (isFinite(slope)) negativeSlopes.push(slope);
+    }
+  }
+
+  return negativeSlopes.length ? Math.abs(Math.min.apply(null, negativeSlopes)) : null;
+}
+
+function dpSlidingDropFile(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  dpSlidingHandleFiles(e.dataTransfer.files);
+}
+
+function dpSlidingHandleFiles(fileList) {
+  if (!fileList || !fileList.length) return;
+  dpSlidingState.files = Array.prototype.slice.call(fileList);
+
+  document.getElementById('dp-sliding-upload-title').textContent = dpSlidingState.files.length + ' archivo(s) seleccionado(s)';
+  document.getElementById('dp-sliding-upload-sub').textContent = dpSlidingState.files.map(function(f) { return f.name; }).join(', ');
+  document.getElementById('dp-sliding-upload-area').style.borderColor = 'var(--success)';
+
+  dpHideError('dp-sliding-error');
+  document.getElementById('dp-sliding-results').style.display = 'none';
+
+  var btn = document.getElementById('dp-sliding-process-btn');
+  btn.disabled = false;
+  btn.style.opacity = '';
+  btn.style.cursor = '';
+}
+
+function dpProcessSliding() {
+  if (!dpSlidingState.files.length) { dpShowError('dp-sliding-error', 'Selecciona al menos un archivo.'); return; }
+  dpHideError('dp-sliding-error');
+
+  var files = dpSlidingState.files;
+  var results = new Array(files.length);
+  var pending = files.length;
+
+  files.forEach(function(file, idx) {
+    var reader = new FileReader();
+    reader.onerror = function() {
+      results[idx] = { file: file.name, value: null, error: 'No se pudo leer el archivo' };
+      dpSlidingFileDone();
+    };
+    reader.onload = function(e) {
+      try {
+        var text = dpDecodeLatin1(e.target.result);
+        var value = dpSlidingProcessText(text);
+        results[idx] = { file: file.name, value: value, error: value === null ? 'Sin ventanas de deceleracion validas' : '' };
+      } catch (err) {
+        results[idx] = { file: file.name, value: null, error: err.message };
+      }
+      dpSlidingFileDone();
+    };
+    reader.readAsArrayBuffer(file);
+  });
+
+  function dpSlidingFileDone() {
+    pending--;
+    if (pending === 0) {
+      dpSlidingState.results = results;
+      dpRenderSlidingResults(results);
+    }
+  }
+}
+
+function dpRenderSlidingResults(results) {
+  document.getElementById('dp-sliding-count').textContent = results.length + ' archivo' + (results.length !== 1 ? 's' : '');
+  document.getElementById('dp-sliding-results-table').innerHTML = results.map(function(r) {
+    var valueText = r.value !== null ? r.value.toFixed(2).replace('.', ',') + ' cm/s²' : '—';
+    var statusHtml = r.error ? '<span style="color:var(--danger);">' + r.error + '</span>' : '<span style="color:var(--success);">OK</span>';
+    return '<tr><td>' + r.file + '</td><td>' + valueText + '</td><td>' + statusHtml + '</td></tr>';
+  }).join('');
+  document.getElementById('dp-sliding-results').style.display = '';
+}
+
+function dpDownloadSlidingPdf() {
+  if (!dpSlidingState.results.length) { dpShowError('dp-sliding-error', 'Procesa al menos un archivo antes de descargar el informe.'); return; }
+  var jsPDFCtor = window.jspdf && window.jspdf.jsPDF;
+  if (!jsPDFCtor) { dpShowError('dp-sliding-error', 'No se pudo cargar el generador de PDF.'); return; }
+
+  var doc = new jsPDFCtor({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  var pageWidth = doc.internal.pageSize.getWidth();
+  var margin = 14;
+  var y = 16;
+
+  var logoImg = document.querySelector('footer img');
+  if (logoImg && logoImg.src) { try { doc.addImage(logoImg.src, 'PNG', margin, y - 6, 26, 7); } catch (e) {} }
+
+  doc.setFontSize(15);
+  doc.setTextColor(0, 35, 100);
+  doc.text('Informe Sliding Door — Aceleracion Maxima', pageWidth / 2, y, { align: 'center' });
+  y += 10;
+
+  var rows = dpSlidingState.results.map(function(r) {
+    return [r.file, r.value !== null ? r.value.toFixed(2).replace('.', ',') + ' cm/s²' : '-', r.error || 'OK'];
+  });
+
+  doc.autoTable({
+    startY: y,
+    head: [['Archivo', 'Aceleracion Maxima', 'Estado']],
+    body: rows,
+    theme: 'grid',
+    headStyles: { fillColor: [0, 35, 100], textColor: 255, fontSize: 10 },
+    bodyStyles: { fontSize: 9 },
+    margin: { left: margin, right: margin }
+  });
+
+  doc.setFontSize(8);
+  doc.setTextColor(140, 140, 140);
+  doc.text('Generado: ' + new Date().toLocaleString('es-ES') + ' · GEZE StoxAI Data-Processor', pageWidth / 2, 290, { align: 'center' });
+
+  doc.save('SlidingDoor_Report.pdf');
+}
+
+// ===========================================================
+// DATA PROCESSOR — F-KONSTANT
+// Puerto de FK.py (read_txt_file/compute_signals): TXT tab-separado con
+// cabecera real, columnas localizadas por coincidencia parcial (igual que
+// _find_column). A diferencia de MTB/MCTB/SlidingDoor, aqui NO se
+// descartan filas con pd.to_numeric(errors='coerce') — los valores no
+// numericos quedan como huecos (dpToPoints los mapea a null), igual que
+// en el script original. Varios archivos posibles; cada uno es una serie
+// temporal independiente asi que se eligen con chips en vez de
+// superponerlos en el mismo eje X.
+// ===========================================================
+
+var dpFkState = { files: [], parsed: [], activeIndex: -1, chart: null, voltage: null };
+
+var DP_FK_COLUMN_HINTS = { time: 'default sample rate', force: 'HBK_U2B_2kN', travel: 'Travel', speed: 'Filtered_speed', current: 'Filtered_current' };
+var DP_FK_MOVING_AVERAGE = 100;
+
+function dpFkParseText(text) {
+  var lines = dpSplitLines(text);
+  if (lines.length < 2) throw new Error('Archivo sin datos.');
+  var header = lines[0].split('\t').map(function(h) { return h.trim(); });
+
+  var cols = {};
+  Object.keys(DP_FK_COLUMN_HINTS).forEach(function(key) {
+    var hint = DP_FK_COLUMN_HINTS[key].toLowerCase();
+    var idx = -1;
+    for (var i = 0; i < header.length; i++) { if (header[i].toLowerCase().indexOf(hint) !== -1) { idx = i; break; } }
+    if (idx === -1) throw new Error('No se encontro ninguna columna que contenga "' + DP_FK_COLUMN_HINTS[key] + '". Columnas disponibles: ' + header.join(', '));
+    cols[key] = idx;
+  });
+
+  var time = [], force = [], travel = [], speedRaw = [], currentRaw = [];
+  for (var i = 1; i < lines.length; i++) {
+    var parts = lines[i].split('\t');
+    var toNumOrNaN = function(v) { var n = dpNumDec(v, ','); return n === null ? NaN : n; };
+    time.push(toNumOrNaN(parts[cols.time]));
+    force.push(toNumOrNaN(parts[cols.force]));
+    travel.push(toNumOrNaN(parts[cols.travel]));
+    speedRaw.push(toNumOrNaN(parts[cols.speed]));
+    currentRaw.push(toNumOrNaN(parts[cols.current]));
+  }
+
+  var speed = dpRollingMeanCentered(speedRaw, DP_FK_MOVING_AVERAGE, 1);
+  var current = dpRollingMeanCentered(currentRaw, DP_FK_MOVING_AVERAGE, 1);
+
+  return { time: time, force: force, travel: travel, speed: speed, current: current };
+}
+
+function dpFkDropFile(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  dpFkHandleFiles(e.dataTransfer.files);
+}
+
+function dpFkHandleFiles(fileList) {
+  if (!fileList || !fileList.length) return;
+  dpFkState.files = Array.prototype.slice.call(fileList);
+
+  document.getElementById('dp-fk-upload-title').textContent = dpFkState.files.length + ' archivo(s) seleccionado(s)';
+  document.getElementById('dp-fk-upload-sub').textContent = dpFkState.files.map(function(f) { return f.name; }).join(', ');
+  document.getElementById('dp-fk-upload-area').style.borderColor = 'var(--success)';
+
+  dpHideError('dp-fk-error');
+  document.getElementById('dp-fk-results').style.display = 'none';
+
+  var btn = document.getElementById('dp-fk-process-btn');
+  btn.disabled = false;
+  btn.style.opacity = '';
+  btn.style.cursor = '';
+}
+
+function dpProcessFk() {
+  if (!dpFkState.files.length) { dpShowError('dp-fk-error', 'Selecciona al menos un archivo.'); return; }
+  var voltage = parseFloat(document.getElementById('dp-fk-voltage').value);
+  if (!isFinite(voltage) || voltage <= 0) { dpShowError('dp-fk-error', 'Introduce un voltaje nominal valido.'); return; }
+  dpFkState.voltage = voltage;
+  dpHideError('dp-fk-error');
+
+  var files = dpFkState.files;
+  var parsed = new Array(files.length);
+  var pending = files.length;
+
+  files.forEach(function(file, idx) {
+    var reader = new FileReader();
+    reader.onerror = function() { parsed[idx] = { name: file.name, signals: null, error: 'No se pudo leer el archivo' }; dpFkFileDone(); };
+    reader.onload = function(e) {
+      try {
+        var text = dpDecodeUtf8(e.target.result);
+        parsed[idx] = { name: file.name, signals: dpFkParseText(text), error: null };
+      } catch (err) {
+        parsed[idx] = { name: file.name, signals: null, error: err.message };
+      }
+      dpFkFileDone();
+    };
+    reader.readAsArrayBuffer(file);
+  });
+
+  function dpFkFileDone() {
+    pending--;
+    if (pending === 0) {
+      dpFkState.parsed = parsed;
+      var firstOk = parsed.findIndex(function(p) { return p.signals; });
+      dpFkState.activeIndex = firstOk;
+      document.getElementById('dp-fk-results').style.display = '';
+      dpFkRenderChips();
+      if (firstOk !== -1) dpFkRenderChart(firstOk);
+      else dpShowError('dp-fk-error', 'Ningun archivo se pudo procesar correctamente.');
+    }
+  }
+}
+
+function dpFkRenderChips() {
+  var html = dpFkState.parsed.map(function(p, idx) {
+    var cls = 'doc-chip dp-fk-chip' + (idx === dpFkState.activeIndex ? ' active' : '') + (p.error ? ' dp-fk-chip-error' : '');
+    var title = p.error ? p.error.replace(/"/g, '&quot;') : '';
+    return '<span class="' + cls + '" onclick="dpFkSelectFile(' + idx + ')" title="' + title + '">' + p.name + (p.error ? ' ⚠' : '') + '</span>';
+  }).join('');
+  document.getElementById('dp-fk-file-chips').innerHTML = html;
+}
+
+function dpFkSelectFile(idx) {
+  var p = dpFkState.parsed[idx];
+  if (!p || !p.signals) return;
+  dpFkState.activeIndex = idx;
+  dpFkRenderChips();
+  dpFkRenderChart(idx);
+}
+
+// Media sobre el 30% central de la muestra (a partes iguales antes y
+// despues), para evitar los transitorios de arranque y frenada al principio
+// y al final del recorrido.
+var DP_FK_CENTRAL_FRACTION = 0.30;
+
+function dpFkCentralRange(n) {
+  var count = Math.round(n * DP_FK_CENTRAL_FRACTION);
+  var start = Math.floor((n - count) / 2);
+  return { start: start, end: start + count };
+}
+
+function dpFkMeanRange(arr, start, end) {
+  var sum = 0, have = 0;
+  for (var i = start; i < end; i++) {
+    var v = arr[i];
+    if (typeof v === 'number' && isFinite(v)) { sum += v; have++; }
+  }
+  return have > 0 ? sum / have : NaN;
+}
+
+function dpFkResultRows(signals, voltage) {
+  var range = dpFkCentralRange(signals.time.length);
+  var speedMean = dpFkMeanRange(signals.speed, range.start, range.end);
+  var currentMean = dpFkMeanRange(signals.current, range.start, range.end);
+
+  var effSum = 0, effHave = 0;
+  for (var i = range.start; i < range.end; i++) {
+    var f = signals.force[i], v = signals.speed[i], c = signals.current[i];
+    if (isFinite(f) && isFinite(v) && isFinite(c) && c !== 0) { effSum += (f * v) / (voltage * c); effHave++; }
+  }
+  var efficiencyMean = effHave > 0 ? effSum / effHave : NaN;
+
+  return [
+    ['Velocidad media (30% central)', isFinite(speedMean) ? speedMean.toFixed(2) + ' mm/s' : 'N/D'],
+    ['Corriente media (30% central)', isFinite(currentMean) ? currentMean.toFixed(2) + ' mA' : 'N/D'],
+    ['Eficiencia media (30% central)', isFinite(efficiencyMean) ? (efficiencyMean * 100).toFixed(1) + ' %' : 'N/D']
+  ];
+}
+
+function dpFkRenderStatsTable(signals) {
+  var rows = dpFkResultRows(signals, dpFkState.voltage);
+  document.getElementById('dp-fk-stats-table').innerHTML = rows.map(function(r) {
+    return '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td></tr>';
+  }).join('');
+}
+
+function dpFkRenderChart(idx) {
+  var p = dpFkState.parsed[idx];
+  document.getElementById('dp-fk-chart-title').textContent = 'Fuerza, Travel, Velocidad y Corriente frente a Tiempo — ' + p.name;
+
+  var s = p.signals;
+  dpFkRenderStatsTable(s);
+  var ctx = document.getElementById('dp-fk-chart').getContext('2d');
+  if (dpFkState.chart) dpFkState.chart.destroy();
+
+  dpFkState.chart = new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [
+        { type: 'line', label: 'Fuerza (N)', data: dpToPoints(s.time, s.force), borderColor: '#006ee1', backgroundColor: 'transparent', borderWidth: 1.5, pointRadius: 0, yAxisID: 'y' },
+        { type: 'line', label: 'Travel (mm)', data: dpToPoints(s.time, s.travel), borderColor: '#1a7a4a', backgroundColor: 'transparent', borderWidth: 1.5, pointRadius: 0, yAxisID: 'y1' },
+        { type: 'line', label: 'Velocidad filtrada (mm/s)', data: dpToPoints(s.time, s.speed), borderColor: '#c0392b', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, yAxisID: 'y2' },
+        { type: 'line', label: 'Corriente filtrada (mA)', data: dpToPoints(s.time, s.current), borderColor: '#7b3fa0', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, yAxisID: 'y3' }
+      ]
+    },
+    options: {
+      responsive: true,
+      animation: false,
+      interaction: { mode: 'nearest', intersect: false },
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } },
+      scales: {
+        x: { type: 'linear', title: { display: true, text: 'Tiempo [s]' } },
+        y: { type: 'linear', position: 'left', title: { display: true, text: 'Fuerza [N]', color: '#006ee1' }, ticks: { color: '#006ee1' } },
+        y1: { type: 'linear', position: 'right', title: { display: true, text: 'Travel [mm]', color: '#1a7a4a' }, ticks: { color: '#1a7a4a' }, grid: { drawOnChartArea: false } },
+        y2: { type: 'linear', position: 'right', title: { display: true, text: 'Velocidad [mm/s]', color: '#c0392b' }, ticks: { color: '#c0392b' }, grid: { drawOnChartArea: false } },
+        y3: { type: 'linear', position: 'right', title: { display: true, text: 'Corriente [mA]', color: '#7b3fa0' }, ticks: { color: '#7b3fa0' }, grid: { drawOnChartArea: false } }
+      }
+    }
+  });
+}
+
+function dpDownloadFkPdf() {
+  var idx = dpFkState.activeIndex;
+  if (idx === -1 || !dpFkState.parsed[idx] || !dpFkState.parsed[idx].signals) { dpShowError('dp-fk-error', 'Procesa y selecciona un archivo antes de descargar.'); return; }
+  var jsPDFCtor = window.jspdf && window.jspdf.jsPDF;
+  if (!jsPDFCtor) { dpShowError('dp-fk-error', 'No se pudo cargar el generador de PDF.'); return; }
+
+  var p = dpFkState.parsed[idx];
+  var fileName = p.name.replace(/\.[^.]+$/, '');
+
+  var doc = new jsPDFCtor({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  var pageWidth = doc.internal.pageSize.getWidth();
+  var margin = 14;
+  var y = 16;
+
+  var logoImg = document.querySelector('footer img');
+  if (logoImg && logoImg.src) { try { doc.addImage(logoImg.src, 'PNG', margin, y - 6, 26, 7); } catch (e) {} }
+
+  doc.setFontSize(15);
+  doc.setTextColor(0, 35, 100);
+  doc.text('Informe F-Konstant', pageWidth / 2, y, { align: 'center' });
+  y += 6;
+  doc.setFontSize(10);
+  doc.setTextColor(90, 90, 90);
+  doc.text(p.name, pageWidth / 2, y, { align: 'center' });
+  y += 10;
+
+  var canvas = document.getElementById('dp-fk-chart');
+  if (canvas && canvas.width) {
+    var imgWidth = pageWidth - margin * 2;
+    var imgData = canvas.toDataURL('image/png', 1.0);
+    var h = imgWidth * (canvas.height / canvas.width);
+    doc.addImage(imgData, 'PNG', margin, y, imgWidth, h);
+    y += h + 8;
+  }
+
+  var rows = dpFkResultRows(p.signals, dpFkState.voltage);
+  if (y > 250) { doc.addPage(); y = 16; }
+  doc.autoTable({
+    startY: y,
+    head: [['Parametro', 'Valor']],
+    body: rows,
+    theme: 'grid',
+    headStyles: { fillColor: [0, 35, 100], textColor: 255, fontSize: 10 },
+    bodyStyles: { fontSize: 10 },
+    margin: { left: margin, right: margin }
+  });
+
+  doc.setFontSize(8);
+  doc.setTextColor(140, 140, 140);
+  doc.text('Generado: ' + new Date().toLocaleString('es-ES') + ' · GEZE StoxAI Data-Processor', pageWidth / 2, 290, { align: 'center' });
+
+  doc.save(fileName + '_FK_Report.pdf');
 }
 
 loadAll();

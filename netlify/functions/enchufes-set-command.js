@@ -1,26 +1,56 @@
-// Puente temporal: reenvia al deploy de produccion vigente (6a75c5d2...) que
-// aun contiene el codigo real de Fans, recuperado solo en el frontend.
-// Sustituir por la funcion original en cuanto se recupere su codigo fuente.
-const UPSTREAM = "https://6a75c5d20e8c8ee638de926b--stox-ai-system.netlify.app/api/set-command";
+import { getStore } from "@netlify/blobs";
+
+const VALID_PLUGS = new Set(["fan_one", "fan_two", "all"]);
+const VALID_STATES = new Set(["on", "off"]);
+const COMMAND_TTL_MS = 2 * 60 * 1000;
+
+function pruneQueue(queue) {
+  const now = Date.now();
+  return queue.filter((cmd) => now - cmd.createdAt < COMMAND_TTL_MS);
+}
 
 export default async (request) => {
-  try {
-    const headers = {};
-    const apiKey = request.headers.get("x-api-key");
-    if (apiKey) headers["X-API-KEY"] = apiKey;
+  if (request.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
 
-    const init = { method: request.method, headers };
-    if (request.method !== "GET" && request.method !== "HEAD") {
-      headers["Content-Type"] = "application/json";
-      init.body = await request.text();
+  if (request.headers.get("x-api-key") !== process.env.API_SECRET) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+
+  try {
+    const { plug, state } = await request.json();
+
+    if (!VALID_PLUGS.has(plug) || !VALID_STATES.has(state)) {
+      return new Response(JSON.stringify({ error: "Invalid plug or state" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
     }
 
-    const response = await fetch(UPSTREAM, init);
-    const data = await response.text();
-    return new Response(data, {
-      status: response.status,
+    const command = {
+      id: crypto.randomUUID(),
+      plug,
+      state,
+      createdAt: Date.now()
+    };
+
+    const store = getStore("enchufes");
+    const existingQueue = (await store.get("queue", { type: "json" })) || [];
+    const queue = pruneQueue(existingQueue);
+    queue.push(command);
+    await store.setJSON("queue", queue);
+
+    return new Response(JSON.stringify({ success: true, command }), {
+      status: 200,
       headers: {
-        "Content-Type": response.headers.get("Content-Type") || "application/json",
+        "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*"
       }
     });

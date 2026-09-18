@@ -1,26 +1,47 @@
-// Puente temporal: reenvia al deploy de produccion vigente (6a75c5d2...) que
-// aun contiene el codigo real de Fans, recuperado solo en el frontend.
-// Sustituir por la funcion original en cuanto se recupere su codigo fuente.
-const UPSTREAM = "https://6a75c5d20e8c8ee638de926b--stox-ai-system.netlify.app/api/set-schedule";
+import { getStore } from "@netlify/blobs";
+
+const TIME_RE = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
 export default async (request) => {
-  try {
-    const headers = {};
-    const apiKey = request.headers.get("x-api-key");
-    if (apiKey) headers["X-API-KEY"] = apiKey;
+  if (request.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
 
-    const init = { method: request.method, headers };
-    if (request.method !== "GET" && request.method !== "HEAD") {
-      headers["Content-Type"] = "application/json";
-      init.body = await request.text();
+  if (request.headers.get("x-api-key") !== process.env.API_SECRET) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+
+  try {
+    const { auto, shutoffTime } = await request.json();
+
+    if (typeof auto !== "boolean") {
+      return new Response(JSON.stringify({ error: "Invalid auto" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
     }
 
-    const response = await fetch(UPSTREAM, init);
-    const data = await response.text();
-    return new Response(data, {
-      status: response.status,
+    if (typeof shutoffTime !== "string" || !TIME_RE.test(shutoffTime)) {
+      return new Response(JSON.stringify({ error: "Invalid shutoffTime, expected HH:MM" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    const schedule = { auto, shutoffTime };
+    const store = getStore("enchufes");
+    await store.setJSON("schedule", schedule);
+
+    return new Response(JSON.stringify({ success: true, schedule }), {
+      status: 200,
       headers: {
-        "Content-Type": response.headers.get("Content-Type") || "application/json",
+        "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*"
       }
     });
