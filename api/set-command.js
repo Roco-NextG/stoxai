@@ -1,6 +1,10 @@
 import { kv, key, isAuthorized, unauthorized, methodNotAllowed, withCors } from "./_lib/kv.js";
 
-const VALID_PLUGS = new Set(["fan_one", "fan_two", "all"]);
+const VALID_PLUGS = new Set([
+  "fan_one", "fan_two",
+  "fan_3", "fan_4", "fan_5", "fan_6", "fan_7", "fan_8", "fan_9", "fan_10",
+  "all"
+]);
 const VALID_STATES = new Set(["on", "off"]);
 const COMMAND_TTL_MS = 2 * 60 * 1000;
 

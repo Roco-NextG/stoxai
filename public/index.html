@@ -6,6 +6,9 @@
 <title>GEZE StoxAI — Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
   :root {
     --geze-blau:#002364;--geze-gelb:#fddc35;--akzent-blau:#006ee1;
@@ -56,6 +59,8 @@
   .btn-secondary:hover{border-color:var(--akzent-blau);color:var(--akzent-blau);}
   .btn-success{background:var(--success);color:var(--white);border:none;padding:8px 16px;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;border-radius:4px;transition:opacity 150ms ease-out;white-space:nowrap;}
   .btn-success:hover{opacity:0.85;}
+  .btn-danger{background:var(--danger);color:var(--white);border:none;padding:8px 16px;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;border-radius:4px;transition:opacity 150ms ease-out;white-space:nowrap;}
+  .btn-danger:hover{opacity:0.85;}
   .btn-danger-sm{background:none;color:var(--danger);border:0.5px solid var(--danger);padding:5px 10px;font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;border-radius:4px;transition:all 150ms ease-out;}
   .btn-danger-sm:hover{background:var(--danger);color:var(--white);}
   .btn-edit-sm{background:none;color:var(--akzent-blau);border:0.5px solid var(--akzent-blau);padding:5px 10px;font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;border-radius:4px;transition:all 150ms ease-out;}
@@ -104,11 +109,23 @@
   .fan-icon.fan-pending{animation:fan-blink 0.6s ease-in-out infinite;}
 
   .fan-master-row{display:flex;align-items:center;gap:14px;margin-bottom:16px;padding-bottom:16px;border-bottom:0.5px solid var(--sandgrau);}
-  .fan-master-btn{flex-shrink:0;width:64px;height:64px;border-radius:50%;border:none;background:rgba(255,255,255,0.95);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;color:var(--sandgrau-dunkel);box-shadow:0 0 0 1px var(--sandgrau) inset;transition:box-shadow 180ms ease-out,background 180ms ease-out,color 180ms ease-out;}
-  .fan-master-btn svg{width:32px;height:32px;}
-  .fan-master-btn:hover{box-shadow:0 0 0 2px var(--akzent-blau) inset;}
-  .fan-master-btn.fan-on{color:#b8860b;background:#fff8e2;box-shadow:0 0 0 1px #f0c766 inset,0 0 16px 4px rgba(253,220,53,0.6);}
-  .fan-master-btn.fan-pending{animation:fan-blink 0.6s ease-in-out infinite;}
+  .fan-master-onoff{flex-shrink:0;padding:10px 20px;font-size:13px;}
+  .fan-master-onoff.fan-pending{animation:fan-blink 0.6s ease-in-out infinite;}
+
+  .oficina-sector-divider{stroke:var(--sandgrau-dunkel);stroke-width:0.25;stroke-dasharray:1.4,1.2;}
+  .oficina-group-outline{fill:none;stroke:var(--geze-blau);stroke-width:0.4;pointer-events:none;}
+  .oficina-seat rect{fill:#eef1f0;stroke:var(--sandgrau-dunkel);stroke-width:0.15;cursor:pointer;transition:fill 150ms ease-out;}
+  .oficina-seat:hover rect{fill:#dbe9ff;stroke:var(--akzent-blau);}
+  .oficina-seat-ocupado rect{fill:#fff8e2;stroke:#f0c766;}
+  .oficina-seat-ocupado:hover rect{fill:#ffe9a8;}
+  .oficina-seat-sala rect{fill:#dbe9ff;stroke:var(--akzent-blau);}
+  .oficina-seat-sala:hover rect{fill:#c2dcff;}
+  .oficina-seat-sala .oficina-seat-label{font-size:1.8px;fill:var(--geze-blau);font-weight:600;}
+  .oficina-seat-label{font-size:1.7px;fill:var(--sec-2);font-family:'Inter',sans-serif;pointer-events:none;}
+  .oficina-tooltip{position:absolute;z-index:20;background:var(--geze-blau);color:#fff;padding:8px 12px;border-radius:6px;font-size:12px;pointer-events:none;max-width:220px;box-shadow:0 4px 12px rgba(0,0,0,0.25);}
+  .oficina-tooltip-title{font-weight:600;margin-bottom:2px;}
+  .oficina-tooltip-sub{opacity:0.85;}
+  .oficina-tooltip-seat{margin-top:4px;font-size:10px;opacity:0.7;}
   .fan-master-label{font-size:13px;color:var(--geze-blau);font-weight:500;line-height:1.5;}
   .fan-master-sub{font-size:11px;color:var(--sec-2);font-weight:400;}
   .fan-schedule-row{display:flex;align-items:center;gap:14px;margin-bottom:16px;padding-bottom:16px;border-bottom:0.5px solid var(--sandgrau);}
@@ -560,9 +577,9 @@
         <span class="sidepanel-item-initial">F</span>
         <span class="sidepanel-item-label">Fans</span>
       </div>
-      <div class="sidepanel-item" id="tab-dataprocessor" onclick="showPanel('dataprocessor')">
-        <span class="sidepanel-item-initial">P</span>
-        <span class="sidepanel-item-label">Data-Processor</span>
+      <div class="sidepanel-item" id="tab-oficina" onclick="showPanel('oficina')">
+        <span class="sidepanel-item-initial">O</span>
+        <span class="sidepanel-item-label">Office</span>
       </div>
     </nav>
   </aside>
@@ -836,9 +853,8 @@
     <div id="enchufes-controls">
       <div class="table-card fan-plane-card" style="padding:20px;">
         <div class="fan-master-row">
-          <button type="button" class="fan-master-btn" id="fan-master-btn" title="Todos los fans">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618Z"/><circle cx="12" cy="12" r="1.4"/></svg>
-          </button>
+          <button type="button" class="btn-success fan-master-onoff" id="fan-master-on-btn" onclick="onMasterAllOn()">Todos ON</button>
+          <button type="button" class="btn-danger fan-master-onoff" id="fan-master-off-btn" onclick="onMasterAllOff()">Todos OFF</button>
           <div class="fan-master-label">Todos los fans<br><span class="fan-master-sub">Enciende o apaga todos los ventiladores activos a la vez</span></div>
         </div>
         <div class="fan-schedule-row">
@@ -894,6 +910,56 @@
       <button class="btn-secondary" onclick="enchufesChangeKey()">Cambiar clave API</button>
     </div>
   </div>
+  <!-- OFICINA PANEL -->
+  <div class="panel-section" id="panel-oficina">
+    <div class="section-header">
+      <div class="section-title-group">
+        <div class="frame-accent"><div class="fl"></div><div class="fl"></div></div>
+        <span class="section-title">Office</span>
+      </div>
+      <div class="section-actions">
+        <button class="btn-secondary" id="oficina-tab-plano-btn" onclick="oficinaSwitchView('plano')">Plano</button>
+        <button class="btn-secondary" id="oficina-tab-gestion-btn" onclick="oficinaSwitchView('gestion')">Gestionar puestos</button>
+        <button class="btn-secondary" id="oficina-tab-chat-btn" onclick="oficinaSwitchView('chat')">¿Con quién hablar?</button>
+      </div>
+    </div>
+
+    <div id="oficina-vista-plano">
+      <div class="table-card" style="padding:20px;">
+        <div style="font-size:12px;color:var(--sec-2);margin-bottom:12px;">Pasa el cursor (o toca en móvil) sobre un puesto para ver quién lo ocupa.</div>
+        <div id="oficina-plano-frame" style="position:relative;width:100%;">
+          <svg id="oficina-svg" viewBox="0 0 100 56" style="width:100%;height:auto;display:block;"></svg>
+          <div id="oficina-tooltip" class="oficina-tooltip" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="oficina-vista-gestion" style="display:none;">
+      <div class="table-card" style="padding:20px;">
+        <div style="font-size:12px;color:var(--sec-2);margin-bottom:14px;">Asigna o edita quién ocupa cada puesto. Deja el nombre vacío para dejarlo libre.</div>
+        <table>
+          <thead><tr><th>Puesto</th><th>Nombre</th><th>Cargo</th><th>Departamento</th><th></th></tr></thead>
+          <tbody id="oficina-gestion-tbody"></tbody>
+        </table>
+      </div>
+      <div class="table-card" style="padding:20px;margin-top:16px;">
+        <div class="section-title" style="margin-bottom:12px;">Palabras clave por departamento</div>
+        <div style="font-size:12px;color:var(--sec-2);margin-bottom:12px;">Se usan para sugerir con quién hablar en el chat. Sepáralas por comas.</div>
+        <div id="oficina-keywords-list"></div>
+      </div>
+    </div>
+
+    <div id="oficina-vista-chat" style="display:none;">
+      <div class="table-card" style="padding:20px;max-width:600px;">
+        <div style="font-size:12px;color:var(--sec-2);margin-bottom:12px;">Escribe qué necesitas y te sugerimos con quién hablar.</div>
+        <div style="display:flex;gap:8px;">
+          <input class="form-input" id="oficina-chat-input" type="text" placeholder="ej: necesito ayuda con una factura" style="flex:1;" onkeydown="if(event.key==='Enter'){oficinaChatEnviar();}">
+          <button class="btn-primary" onclick="oficinaChatEnviar()">Preguntar</button>
+        </div>
+        <div id="oficina-chat-resultados" style="margin-top:16px;"></div>
+      </div>
+    </div>
+  </div>
   <!-- DATA PROCESSOR PANEL -->
   <div class="panel-section" id="panel-dataprocessor">
 
@@ -903,6 +969,9 @@
         <div class="section-title-group">
           <div class="frame-accent"><div class="fl"></div><div class="fl"></div></div>
           <span class="section-title">Data-Processor</span>
+        </div>
+        <div class="section-actions">
+          <button class="btn-secondary" onclick="showPanel('digital')">← Digital Tools</button>
         </div>
       </div>
       <div class="bancos-grid">
@@ -1157,6 +1226,12 @@
         <div class="tool-card-name">Calibración de Galgas Extensiométricas</div>
         <div class="tool-card-desc">Cálculo del Factor K para QuantumX y Beckhoff</div>
         <button class="btn-secondary tool-card-btn" onclick="event.stopPropagation();window.open('tools/calibracion-galgas.html','_blank')">Abrir</button>
+      </div>
+      <div class="tool-card" onclick="showPanel('dataprocessor')">
+        <div class="tool-card-icon">🧮</div>
+        <div class="tool-card-name">Data Processor</div>
+        <div class="tool-card-desc">MTB, MCTB, Sliding Door y F-Konstant — procesa exports del banco y genera informes PDF</div>
+        <button class="btn-secondary tool-card-btn" onclick="event.stopPropagation();showPanel('dataprocessor')">Abrir</button>
       </div>
       <div class="tool-card-add" onclick="showToast('Próximamente')">
         <div class="tool-card-add-icon">+</div>
@@ -1752,7 +1827,8 @@ function enchufesChangeKey() {
 function enchufesLabel(plug) {
   if (plug === 'fan_one') return 'Fan One';
   if (plug === 'fan_two') return 'Fan Two';
-  return 'Todos los fans';
+  var fan = FAN_POSITIONS.filter(function(f) { return f.backendId === plug; })[0];
+  return fan ? ('Fan ' + fan.num) : 'Todos los fans';
 }
 
 function enchufesSend(plug, state, btn) {
@@ -1891,14 +1967,14 @@ function sendSchedule(auto, shutoffTime) {
 var FAN_POSITIONS = [
   { id: 'fan_1',  num: 1,  x: 99.1, y: 85.4, backendId: 'fan_one', active: true },
   { id: 'fan_2',  num: 2,  x: 99.1, y: 60.4, backendId: 'fan_two', active: true },
-  { id: 'fan_3',  num: 3,  x: 69.4, y: 45.8, backendId: null, active: false },
-  { id: 'fan_4',  num: 4,  x: 99.1, y: 31.3, backendId: null, active: false },
-  { id: 'fan_5',  num: 5,  x: 99.1, y: 10.4, backendId: null, active: false },
-  { id: 'fan_6',  num: 6,  x: 73.1, y: 14.6, backendId: null, active: false },
-  { id: 'fan_7',  num: 7,  x: 47.2, y: 2.1,  backendId: null, active: false },
-  { id: 'fan_8',  num: 8,  x: 19.4, y: 2.1,  backendId: null, active: false },
-  { id: 'fan_9',  num: 9,  x: 0.9,  y: 22.9, backendId: null, active: false },
-  { id: 'fan_10', num: 10, x: 15.7, y: 97.9, backendId: null, active: false }
+  { id: 'fan_3',  num: 3,  x: 69.4, y: 45.8, backendId: 'fan_3', active: true },
+  { id: 'fan_4',  num: 4,  x: 99.1, y: 31.3, backendId: 'fan_4', active: true },
+  { id: 'fan_5',  num: 5,  x: 99.1, y: 10.4, backendId: 'fan_5', active: true },
+  { id: 'fan_6',  num: 6,  x: 73.1, y: 14.6, backendId: 'fan_6', active: true },
+  { id: 'fan_7',  num: 7,  x: 47.2, y: 2.1,  backendId: 'fan_7', active: true },
+  { id: 'fan_8',  num: 8,  x: 19.4, y: 2.1,  backendId: 'fan_8', active: true },
+  { id: 'fan_9',  num: 9,  x: 0.9,  y: 22.9, backendId: 'fan_9', active: true },
+  { id: 'fan_10', num: 10, x: 15.7, y: 97.9, backendId: 'fan_10', active: true }
 ];
 
 var FAN_ZONES = [
@@ -1909,7 +1985,11 @@ var FAN_ZONES = [
   { id: 'z5', num: 5, x: 9,  y: 90, w: 14, h: 10, members: ['fan_10'] }
 ];
 
-var fanStates = { fan_one: 'off', fan_two: 'off' };
+var fanStates = {
+  fan_one: 'off', fan_two: 'off',
+  fan_3: 'off', fan_4: 'off', fan_5: 'off', fan_6: 'off',
+  fan_7: 'off', fan_8: 'off', fan_9: 'off', fan_10: 'off'
+};
 var pendingFans = {}; // backendId -> { prevState, timeoutId }
 var FAN_ICON_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618Z"/><circle cx="12" cy="12" r="1.4"/></svg>';
 
@@ -1961,8 +2041,16 @@ function onZoneClick(zone) {
   toggleFanGroup(activeMembersOf(zone.members), 'Zona ' + zone.num);
 }
 
-function onMasterClick() {
-  toggleFanGroup(FAN_POSITIONS.filter(function(f) { return f.active; }), 'Todos los fans');
+function onMasterAllOn() {
+  var activeFans = FAN_POSITIONS.filter(function(f) { return f.active; });
+  if (activeFans.length === 0) { showToast('Todos los fans — Próximamente'); return; }
+  sendFanGroup(activeFans, 'on');
+}
+
+function onMasterAllOff() {
+  var activeFans = FAN_POSITIONS.filter(function(f) { return f.active; });
+  if (activeFans.length === 0) { showToast('Todos los fans — Próximamente'); return; }
+  sendFanGroup(activeFans, 'off');
 }
 
 function toggleFanGroup(activeMembers, label) {
@@ -1970,11 +2058,14 @@ function toggleFanGroup(activeMembers, label) {
     showToast(label + ' — Próximamente');
     return;
   }
-  var apiKey = enchufesGetKey();
-  if (!apiKey) { enchufesRenderKeyState(); return; }
-
   var allOff = activeMembers.every(function(f) { return fanStates[f.backendId] !== 'on'; });
   var target = allOff ? 'on' : 'off';
+  return sendFanGroup(activeMembers, target);
+}
+
+function sendFanGroup(activeMembers, target) {
+  var apiKey = enchufesGetKey();
+  if (!apiKey) { enchufesRenderKeyState(); return; }
 
   var chain = Promise.resolve();
   activeMembers.forEach(function(f) {
@@ -2017,13 +2108,13 @@ function applyFanVisual(backendId) {
 }
 
 function updateMasterVisual() {
-  var btn = document.getElementById('fan-master-btn');
-  if (!btn) return;
+  var onBtn = document.getElementById('fan-master-on-btn');
+  var offBtn = document.getElementById('fan-master-off-btn');
+  if (!onBtn || !offBtn) return;
   var activeFans = FAN_POSITIONS.filter(function(f) { return f.active; });
   var anyPending = activeFans.some(function(f) { return !!pendingFans[f.backendId]; });
-  var allOn = activeFans.length > 0 && activeFans.every(function(f) { return fanStates[f.backendId] === 'on'; });
-  btn.classList.toggle('fan-pending', anyPending);
-  btn.classList.toggle('fan-on', !anyPending && allOn);
+  onBtn.classList.toggle('fan-pending', anyPending);
+  offBtn.classList.toggle('fan-pending', anyPending);
 }
 
 function applyAllFanStates() {
@@ -2062,18 +2153,379 @@ function toggleFanView() {
 
 renderFanZones();
 renderFanPlane();
-document.getElementById('fan-master-btn').addEventListener('click', onMasterClick);
 enchufesRenderKeyState();
 enchufesPollStatus();
 loadSchedule();
 setInterval(enchufesPollStatus, 10000);
+
+// Oficina
+var OFICINA_DATA = buildOficinaSeats();
+var OFICINA_SEATS = OFICINA_DATA.seats;
+var OFICINA_OUTLINES = OFICINA_DATA.outlines;
+var oficinaPuestos = {};
+var oficinaKeywords = [];
+var oficinaLoaded = false;
+var oficinaLastSugerencia = null;
+
+function buildOficinaSeats() {
+  var seats = [];
+  var outlines = [];
+
+  // Zona izquierda: 6 oficinas apiladas, la 3 tiene 2 puestos, la 5 y la 6 van juntas en un mismo recuadro (la 5 es la Meeting Room)
+  var izqX = 2, izqW = 16, izqTop = 2, izqBottom = 54;
+  var izqH = (izqBottom - izqTop) / 6;
+  for (var i = 1; i <= 6; i++) {
+    var y = izqTop + (i - 1) * izqH;
+    if (i === 3) {
+      var joinMargin3 = 0.4;
+      var boxY3 = y + joinMargin3, boxH3 = izqH - 2 * joinMargin3;
+      var halfW3 = izqW / 2;
+      outlines.push({ x: izqX, y: boxY3, w: izqW, h: boxH3 });
+      seats.push({ id: 'oficina-3.1', zona: 'izquierda', label: 'Oficina 3.1', x: izqX, y: boxY3, w: halfW3, h: boxH3 });
+      seats.push({ id: 'oficina-3.2', zona: 'izquierda', label: 'Oficina 3.2', x: izqX + halfW3, y: boxY3, w: halfW3, h: boxH3 });
+    } else if (i === 5) {
+      var joinMargin = 0.4;
+      var joinTop = y + joinMargin;
+      var joinH = izqH * 2 - 2 * joinMargin;
+      var halfH = joinH / 2;
+      outlines.push({ x: izqX, y: joinTop, w: izqW, h: joinH });
+      seats.push({ id: 'oficina-5.1', zona: 'izquierda', tipo: 'sala', label: 'Meeting Room', x: izqX, y: joinTop, w: izqW, h: halfH });
+      seats.push({ id: 'oficina-6.1', zona: 'izquierda', label: 'Oficina 6.1', x: izqX, y: joinTop + halfH, w: izqW, h: halfH });
+    } else if (i === 6) {
+      continue;
+    } else {
+      seats.push({ id: 'oficina-' + i + '.1', zona: 'izquierda', label: 'Oficina ' + i + '.1', x: izqX, y: y, w: izqW, h: izqH - 0.8 });
+    }
+  }
+
+  // Zona central: 8 grupos en cuadricula 2x4. Cada grupo es UN recuadro con 4 divisiones (2x2), sin huecos entre puestos.
+  var cenX = 22, cenW = 50, cenTop = 2, cenBottom = 54;
+  var groupCols = 2, groupRows = 4;
+  var groupW = cenW / groupCols, groupH = (cenBottom - cenTop) / groupRows;
+  var groupMargin = 0.7;
+  var groupNum = 0;
+  var offsets = [[0, 0], [1, 0], [0, 1], [1, 1]];
+  for (var r = 0; r < groupRows; r++) {
+    for (var c = 0; c < groupCols; c++) {
+      groupNum++;
+      var gx = cenX + c * groupW, gy = cenTop + r * groupH;
+      var innerW = groupW - 2 * groupMargin, innerH = groupH - 2 * groupMargin;
+      var seatW = innerW / 2, seatH = innerH / 2;
+      outlines.push({ x: gx + groupMargin, y: gy + groupMargin, w: innerW, h: innerH });
+      for (var s = 0; s < 4; s++) {
+        seats.push({
+          id: 'grupo-' + groupNum + '.' + (s + 1),
+          zona: 'central',
+          label: 'Grupo ' + groupNum + '.' + (s + 1),
+          x: gx + groupMargin + offsets[s][0] * seatW,
+          y: gy + groupMargin + offsets[s][1] * seatH,
+          w: seatW,
+          h: seatH
+        });
+      }
+    }
+  }
+
+  // Zona derecha: Mesa 1 (2x4, 8 puestos) arriba, Mesa 2 (2x3, 6 puestos) debajo,
+  // y la Creative Room debajo de todo (absorbe el alto que libera la Mesa 2 al tener menos filas).
+  var derX = 76, derW = 22, derTop = 2, derBottom = 54;
+  var gap = 1.5;
+  var mesaMargin = 0.7;
+  var totalH = derBottom - derTop;
+  var salaHBase = 8;
+  var mesa1Rows = 4, mesa2Rows = 3;
+  var mesa1H = (totalH - salaHBase - 2 * gap) / 2;
+  var rowUnit = (mesa1H - 2 * mesaMargin) / mesa1Rows;
+  var mesa2H = mesa2Rows * rowUnit + 2 * mesaMargin;
+  var salaH = totalH - mesa1H - mesa2H - 2 * gap;
+
+  var mesaRowsByIndex = [mesa1Rows, mesa2Rows];
+  var mesaHByIndex = [mesa1H, mesa2H];
+  var mesaY = derTop;
+  for (var m = 1; m <= 2; m++) {
+    var mesaRows = mesaRowsByIndex[m - 1];
+    var thisMesaH = mesaHByIndex[m - 1];
+    var mx = derX, my = mesaY;
+    var innerMW = derW - 2 * mesaMargin, innerMH = thisMesaH - 2 * mesaMargin;
+    var mesaCols = 2;
+    var colW = innerMW / mesaCols, rowH = innerMH / mesaRows;
+    outlines.push({ x: mx + mesaMargin, y: my + mesaMargin, w: innerMW, h: innerMH });
+    var seatIdx = 0;
+    for (var col = 0; col < mesaCols; col++) {
+      for (var row = 0; row < mesaRows; row++) {
+        seatIdx++;
+        seats.push({
+          id: 'mesa-' + m + '.' + seatIdx,
+          zona: 'derecha',
+          label: 'Mesa ' + m + '.' + seatIdx,
+          x: mx + mesaMargin + col * colW,
+          y: my + mesaMargin + row * rowH,
+          w: colW,
+          h: rowH
+        });
+      }
+    }
+    mesaY += thisMesaH + gap;
+  }
+
+  // Creative Room: un unico recuadro debajo de la Mesa 2
+  seats.push({
+    id: 'creative-room',
+    zona: 'derecha',
+    tipo: 'sala',
+    label: 'Creative Room',
+    x: derX,
+    y: mesaY,
+    w: derW,
+    h: salaH
+  });
+
+  return { seats: seats, outlines: outlines };
+}
+
+function oficinaSwitchView(view) {
+  ['plano', 'gestion', 'chat'].forEach(function(v) {
+    document.getElementById('oficina-vista-' + v).style.display = (v === view) ? '' : 'none';
+    var btn = document.getElementById('oficina-tab-' + v + '-btn');
+    if (btn) btn.classList.toggle('btn-primary', v === view);
+  });
+}
+
+function oficinaInit() {
+  oficinaSwitchView('plano');
+  oficinaRenderPlano();
+  if (!oficinaLoaded) {
+    oficinaLoaded = true;
+    oficinaCargarDatos();
+  }
+}
+
+function oficinaCargarDatos() {
+  Promise.all([
+    fetch('/api/oficina-puestos').then(function(r) { return r.json(); }),
+    fetch('/api/oficina-keywords').then(function(r) { return r.json(); })
+  ]).then(function(results) {
+    oficinaPuestos = results[0].puestos || {};
+    oficinaKeywords = results[1].keywords || [];
+    oficinaRenderPlano();
+    oficinaRenderGestion();
+    oficinaRenderKeywords();
+  }).catch(function() {
+    showToast('No se pudieron cargar los datos de Oficina');
+  });
+}
+
+function oficinaRenderPlano() {
+  var svg = document.getElementById('oficina-svg');
+  if (!svg) return;
+  svg.innerHTML = '';
+
+  [20, 74].forEach(function(dx) {
+    var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', dx);
+    line.setAttribute('y1', 0);
+    line.setAttribute('x2', dx);
+    line.setAttribute('y2', 56);
+    line.setAttribute('class', 'oficina-sector-divider');
+    svg.appendChild(line);
+  });
+
+  OFICINA_OUTLINES.forEach(function(o) {
+    var outline = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    outline.setAttribute('x', o.x);
+    outline.setAttribute('y', o.y);
+    outline.setAttribute('width', o.w);
+    outline.setAttribute('height', o.h);
+    outline.setAttribute('rx', 0.5);
+    outline.setAttribute('class', 'oficina-group-outline');
+    svg.appendChild(outline);
+  });
+
+  OFICINA_SEATS.forEach(function(seat) {
+    var info = oficinaPuestos[seat.id];
+    var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    var claseEstado = seat.tipo === 'sala' ? 'oficina-seat-sala' : (info ? 'oficina-seat-ocupado' : 'oficina-seat-libre');
+    g.setAttribute('class', 'oficina-seat ' + claseEstado);
+
+    var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', seat.x);
+    rect.setAttribute('y', seat.y);
+    rect.setAttribute('width', seat.w);
+    rect.setAttribute('height', seat.h);
+    rect.setAttribute('rx', 0.6);
+    g.appendChild(rect);
+
+    var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', seat.x + seat.w / 2);
+    text.setAttribute('y', seat.y + seat.h / 2);
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('dominant-baseline', 'central');
+    text.setAttribute('class', 'oficina-seat-label');
+    text.textContent = seat.tipo === 'sala' ? seat.label : (info ? info.nombre : 'Empty');
+    g.appendChild(text);
+
+    g.addEventListener('mouseenter', function(e) { oficinaShowTooltip(seat, e); });
+    g.addEventListener('mousemove', function(e) { oficinaMoveTooltip(e); });
+    g.addEventListener('mouseleave', oficinaHideTooltip);
+    g.addEventListener('click', function(e) { e.stopPropagation(); oficinaShowTooltip(seat, e); });
+
+    svg.appendChild(g);
+  });
+}
+
+function oficinaShowTooltip(seat, evt) {
+  var tooltip = document.getElementById('oficina-tooltip');
+  var info = oficinaPuestos[seat.id];
+  if (seat.tipo === 'sala') {
+    tooltip.innerHTML = '<div class="oficina-tooltip-title">' + seat.label + '</div>';
+  } else if (info) {
+    tooltip.innerHTML =
+      '<div class="oficina-tooltip-title">' + info.nombre + '</div>' +
+      '<div class="oficina-tooltip-sub">' + (info.puesto || '') + '</div>' +
+      '<div class="oficina-tooltip-sub">' + (info.departamento || '') + '</div>' +
+      '<div class="oficina-tooltip-seat">' + seat.label + '</div>';
+  } else {
+    tooltip.innerHTML =
+      '<div class="oficina-tooltip-title">Puesto libre</div>' +
+      '<div class="oficina-tooltip-seat">' + seat.label + '</div>';
+  }
+  tooltip.style.display = 'block';
+  oficinaMoveTooltip(evt);
+}
+
+function oficinaMoveTooltip(evt) {
+  var tooltip = document.getElementById('oficina-tooltip');
+  var frame = document.getElementById('oficina-plano-frame');
+  var rect = frame.getBoundingClientRect();
+  var x = evt.clientX - rect.left + 12;
+  var y = evt.clientY - rect.top + 12;
+  tooltip.style.left = x + 'px';
+  tooltip.style.top = y + 'px';
+}
+
+function oficinaHideTooltip() {
+  var tooltip = document.getElementById('oficina-tooltip');
+  if (tooltip) tooltip.style.display = 'none';
+}
+
+function oficinaRenderGestion() {
+  var tbody = document.getElementById('oficina-gestion-tbody');
+  tbody.innerHTML = OFICINA_SEATS.filter(function(seat) { return seat.tipo !== 'sala'; }).map(function(seat) {
+    var info = oficinaPuestos[seat.id] || { nombre: '', puesto: '', departamento: '' };
+    return '<tr>' +
+      '<td>' + seat.label + '</td>' +
+      '<td><input class="form-input" style="min-width:140px;" id="oficina-nombre-' + seat.id + '" value="' + (info.nombre || '').replace(/"/g, '&quot;') + '"></td>' +
+      '<td><input class="form-input" style="min-width:140px;" id="oficina-cargo-' + seat.id + '" value="' + (info.puesto || '').replace(/"/g, '&quot;') + '"></td>' +
+      '<td><input class="form-input" style="min-width:140px;" id="oficina-depto-' + seat.id + '" value="' + (info.departamento || '').replace(/"/g, '&quot;') + '"></td>' +
+      '<td><button class="btn-secondary" onclick="oficinaGuardarPuesto(\'' + seat.id + '\')">Guardar</button></td>' +
+      '</tr>';
+  }).join('');
+}
+
+function oficinaGuardarPuesto(id) {
+  var nombre = document.getElementById('oficina-nombre-' + id).value;
+  var puesto = document.getElementById('oficina-cargo-' + id).value;
+  var departamento = document.getElementById('oficina-depto-' + id).value;
+
+  fetch('/api/edit-oficina-puesto', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: id, nombre: nombre, puesto: puesto, departamento: departamento })
+  }).then(function(res) { return res.json(); }).then(function(data) {
+    if (!data.success) { showToast('No se pudo guardar el puesto'); return; }
+    if (data.puesto) { oficinaPuestos[id] = data.puesto; } else { delete oficinaPuestos[id]; }
+    oficinaRenderPlano();
+    showToast('Puesto actualizado');
+  }).catch(function() { showToast('Error al guardar el puesto'); });
+}
+
+function oficinaRenderKeywords() {
+  var container = document.getElementById('oficina-keywords-list');
+  container.innerHTML = oficinaKeywords.map(function(k, idx) {
+    return '<div class="form-group" style="margin-bottom:10px;">' +
+      '<label class="form-label">' + k.departamento + '</label>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<input class="form-input" style="flex:1;" id="oficina-kw-' + idx + '" value="' + (k.palabras || []).join(', ') + '">' +
+      '<button class="btn-secondary" onclick="oficinaGuardarKeywords(' + idx + ')">Guardar</button>' +
+      '</div></div>';
+  }).join('');
+}
+
+function oficinaGuardarKeywords(idx) {
+  var k = oficinaKeywords[idx];
+  var input = document.getElementById('oficina-kw-' + idx);
+  var palabras = input.value.split(',').map(function(p) { return p.trim(); }).filter(function(p) { return p; });
+
+  fetch('/api/edit-oficina-keywords', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ departamento: k.departamento, palabras: palabras })
+  }).then(function(res) { return res.json(); }).then(function(data) {
+    if (!data.success) { showToast('No se pudieron guardar las palabras clave'); return; }
+    oficinaKeywords = data.keywords;
+    showToast('Palabras clave actualizadas');
+  }).catch(function() { showToast('Error al guardar palabras clave'); });
+}
+
+function oficinaChatEnviar() {
+  var input = document.getElementById('oficina-chat-input');
+  var texto = input.value.trim();
+  if (!texto) return;
+
+  var resultados = document.getElementById('oficina-chat-resultados');
+  resultados.innerHTML = '<div style="color:var(--sec-2);font-size:13px;">Buscando...</div>';
+
+  fetch('/api/oficina-chat-consulta', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ texto: texto })
+  }).then(function(res) { return res.json(); }).then(function(data) {
+    oficinaLastSugerencia = { texto: texto, sugerencias: data.sugerencias || [] };
+    if (!data.sugerencias || data.sugerencias.length === 0) {
+      resultados.innerHTML = '<div style="color:var(--sec-2);font-size:13px;">' + (data.mensaje || 'Sin sugerencias.') + '</div>';
+      return;
+    }
+    resultados.innerHTML = data.sugerencias.map(function(s, idx) {
+      var empleadosHtml = s.empleados.length
+        ? s.empleados.map(function(e) { return e.nombre + (e.puesto ? ' (' + e.puesto + ')' : ''); }).join('<br>')
+        : '<span style="color:var(--sec-2);">Nadie asignado todavía en este departamento</span>';
+      return '<div class="kpi-card" style="margin-bottom:10px;">' +
+        '<div class="kpi-label">' + s.departamento + '</div>' +
+        '<div style="font-size:13px;margin:8px 0;">' + empleadosHtml + '</div>' +
+        '<div style="display:flex;gap:8px;">' +
+        '<button class="btn-success" onclick="oficinaChatFeedback(' + idx + ', true)">Sí, está bien</button>' +
+        '<button class="btn-danger" onclick="oficinaChatFeedback(' + idx + ', false)">No era esta</button>' +
+        '</div></div>';
+    }).join('');
+  }).catch(function() {
+    resultados.innerHTML = '<div style="color:var(--danger);font-size:13px;">Error al consultar.</div>';
+  });
+}
+
+function oficinaChatFeedback(idx, correcto) {
+  if (!oficinaLastSugerencia) return;
+  var s = oficinaLastSugerencia.sugerencias[idx];
+  fetch('/api/oficina-chat-feedback', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      texto: oficinaLastSugerencia.texto,
+      departamentoSugerido: s.departamento,
+      empleadoSugerido: s.empleados[0] ? s.empleados[0].nombre : null,
+      correcto: correcto
+    })
+  }).then(function() {
+    showToast(correcto ? 'Gracias, lo recordaré' : 'Gracias, lo tendré en cuenta');
+  }).catch(function() {});
+}
 
 // Panel
 function showPanel(name) {
   document.querySelectorAll('.panel-section').forEach(function(p) { p.classList.remove('active'); });
   document.querySelectorAll('.sidepanel-item').forEach(function(t) { t.classList.remove('active'); });
   document.getElementById('panel-' + name).classList.add('active');
-  document.getElementById('tab-' + name).classList.add('active');
+  var tabEl = document.getElementById('tab-' + name);
+  if (tabEl) tabEl.classList.add('active');
   if (name === 'bancos') {
     document.getElementById('vista-bancos').style.display = '';
     document.getElementById('vista-banco-detail').classList.remove('active');
@@ -2089,6 +2541,9 @@ function showPanel(name) {
   }
   if (name === 'dataprocessor') {
     dpVolverAGrid();
+  }
+  if (name === 'oficina') {
+    oficinaInit();
   }
 }
 

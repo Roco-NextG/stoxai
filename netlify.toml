@@ -395,3 +395,35 @@
   from = "/api/schedule"
   to = "/.netlify/functions/enchufes-get-schedule"
   status = 200
+
+# --- Modulo Oficina ---
+
+[[redirects]]
+  from = "/api/oficina-puestos"
+  to = "/.netlify/functions/api-oficina-puestos"
+  status = 200
+
+[[redirects]]
+  from = "/api/edit-oficina-puesto"
+  to = "/.netlify/functions/api-edit-oficina-puesto"
+  status = 200
+
+[[redirects]]
+  from = "/api/oficina-keywords"
+  to = "/.netlify/functions/api-oficina-keywords"
+  status = 200
+
+[[redirects]]
+  from = "/api/edit-oficina-keywords"
+  to = "/.netlify/functions/api-edit-oficina-keywords"
+  status = 200
+
+[[redirects]]
+  from = "/api/oficina-chat-consulta"
+  to = "/.netlify/functions/api-oficina-chat-consulta"
+  status = 200
+
+[[redirects]]
+  from = "/api/oficina-chat-feedback"
+  to = "/.netlify/functions/api-oficina-chat-feedback"
+  status = 200
